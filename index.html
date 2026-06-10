@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sketch-o-Media</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Permanent+Marker&display=swap" rel="stylesheet">
+<style>
+  /* ===== Sketch-o-Media — the LOOK (style) =====
+     Brand rule: white paper, red top "chrome", bold black marker lines. */
+  :root{
+    --red:#E23A2E;        /* the red chrome bar */
+    --ink:#1c1c1c;        /* marker black */
+    --paper:#ffffff;      /* white paper */
+    --paper2:#F5F3EC;     /* soft paper for cards & bubbles */
+    --green:#9CC23F;      /* Sketch o' Bot green */
+    --muted:#7a756c;      /* quiet grey text */
+    --heart:#E5394A;
+    --hand:'Patrick Hand', cursive;
+    --marker:'Permanent Marker', cursive;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;height:100%;}
+  body{
+    font-family:var(--hand);
+    background:#EAE7DF;
+    color:var(--ink);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    min-height:100%;padding:18px 14px;gap:10px;
+    -webkit-font-smoothing:antialiased;
+  }
+  .caption{font-size:15px;color:#6a655c;text-align:center;max-width:390px;}
+  .caption b{font-family:var(--marker);font-weight:400;color:var(--red);}
+
+  /* The phone-shaped app window */
+  .phone{
+    width:390px;max-width:100%;height:800px;max-height:88vh;
+    background:var(--paper);
+    border:3px solid var(--ink);
+    border-radius:30px;
+    overflow:hidden;position:relative;
+    display:flex;flex-direction:column;
+  }
+
+  /* ===== Top chrome bar (red) ===== */
+  .chrome{
+    flex-shrink:0;background:var(--red);
+    border-bottom:3px solid var(--ink);
+    padding:10px 12px;position:relative;z-index:30;
+    display:flex;align-items:center;gap:10px;
+  }
+  .logo{
+    font-family:var(--marker);font-size:18px;color:#fff;
+    cursor:pointer;line-height:1;letter-spacing:.3px;
+    text-shadow:1px 1px 0 rgba(0,0,0,.25);flex:1;
+  }
+  .chrome-actions{display:flex;align-items:center;gap:8px;}
+  .icon-btn,.avatar-btn{
+    background:#fff;border:2px solid var(--ink);border-radius:10px;
+    width:36px;height:36px;display:flex;align-items:center;justify-content:center;
+    cursor:pointer;padding:0;color:var(--ink);
+  }
+  .avatar-btn{border-radius:50%;overflow:hidden;}
+  .avatar-btn svg{width:100%;height:100%;}
+  .icon-btn svg{width:20px;height:20px;}
+  .icon-btn:active,.avatar-btn:active{transform:translateY(1px);}
+
+  /* Search drop-down under the chrome */
+  .search-wrap{
+    position:absolute;left:10px;right:10px;top:54px;
+    background:#fff;border:3px solid var(--ink);border-radius:14px;
+    padding:8px;z-index:40;
+  }
+  .search-wrap input{
+    width:100%;font-family:var(--hand);font-size:17px;
+    border:2px solid var(--ink);border-radius:10px;padding:8px 12px;outline:none;
+  }
+  .search-results{margin-top:6px;display:flex;flex-direction:column;}
+  .search-row{
+    display:flex;align-items:center;gap:10px;padding:8px;border-radius:10px;cursor:pointer;
+  }
+  .search-row:hover{background:var(--paper2);}
+  .search-row .ava{width:34px;height:34px;border:2px solid var(--ink);border-radius:50%;overflow:hidden;flex-shrink:0;}
+  .search-row .ava svg{width:100%;height:100%;}
+  .search-row .nm{font-size:17px;}
+  .search-row .fc{font-size:13px;color:var(--muted);margin-left:auto;}
+  .search-empty{padding:10px;color:var(--muted);font-size:15px;}
+
+  /* ===== Screen area ===== */
+  .screens{flex:1;position:relative;overflow:hidden;}
+  .screen{position:absolute;inset:0;display:none;flex-direction:column;}
+  .screen.active{display:flex;}
+  .scroll{flex:1;overflow-y:auto;padding:14px;}
+  .scroll::-webkit-scrollbar{width:0;}
+
+  .screen-title{font-family:var(--marker);font-size:24px;margin:2px 2px 12px;}
+  .back-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+  .back-btn{
+    background:#fff;border:2px solid var(--ink);border-radius:10px;
+    padding:5px 12px;font-family:var(--hand);font-size:16px;cursor:pointer;
+    display:flex;align-items:center;gap:6px;
+  }
+  .back-btn svg{width:16px;height:16px;}
+
+  /* Media-type filter chips */
+  .filters{display:flex;gap:8px;overflow-x:auto;padding-bottom:10px;margin-bottom:4px;}
+  .filters::-webkit-scrollbar{height:0;}
+  .chip{
+    flex-shrink:0;border:2px solid var(--ink);border-radius:999px;
+    padding:5px 13px;font-size:15px;background:#fff;cursor:pointer;white-space:nowrap;color:var(--ink);
+  }
+  .chip.on{background:var(--ink);color:#fff;}
+
+  /* Feed grid */
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .card{cursor:pointer;}
+  .art-box{
+    position:relative;border:3px solid var(--ink);border-radius:14px;
+    background:#fff;aspect-ratio:1/1;overflow:hidden;display:flex;align-items:center;justify-content:center;
+  }
+  .art-box .rank{
+    position:absolute;left:-3px;top:-3px;background:var(--red);color:#fff;
+    border:3px solid var(--ink);border-bottom-right-radius:12px;border-top-left-radius:11px;
+    font-family:var(--marker);font-size:15px;min-width:26px;height:26px;
+    display:flex;align-items:center;justify-content:center;padding:0 4px;
+  }
+  .art-svg,.art-img{width:100%;height:100%;display:block;object-fit:cover;}
+  .card .c-title{font-size:17px;margin:7px 2px 0;line-height:1.05;}
+  .card .c-meta{display:flex;align-items:center;gap:6px;margin:2px 2px 0;color:var(--muted);font-size:14px;}
+  .card .c-react{display:flex;align-items:center;gap:8px;margin:4px 2px 0;font-size:14px;}
+  .react-num{display:flex;align-items:center;gap:3px;}
+
+  /* Profile */
+  .p-head{display:flex;gap:12px;align-items:flex-start;margin-bottom:6px;}
+  .p-ava{width:74px;height:74px;border:3px solid var(--ink);border-radius:50%;overflow:hidden;flex-shrink:0;}
+  .p-ava svg{width:100%;height:100%;}
+  .p-name{font-family:var(--marker);font-size:22px;line-height:1.1;}
+  .p-followers{font-size:16px;color:var(--muted);margin:2px 0 8px;}
+  .btn{
+    border:2px solid var(--ink);border-radius:10px;background:#fff;color:var(--ink);
+    font-family:var(--hand);font-size:16px;padding:6px 16px;cursor:pointer;
+  }
+  .btn.follow{background:var(--red);color:#fff;}
+  .btn.following{background:#fff;color:var(--ink);}
+  .btn.green{background:var(--green);}
+  .p-desc{
+    background:#FFF3B0;border:2px solid var(--ink);border-radius:10px;
+    padding:8px 12px;font-size:16px;margin:10px 0 4px;
+  }
+  .p-posts-label{font-family:var(--marker);font-size:20px;margin:14px 2px 4px;border-bottom:3px solid var(--red);padding-bottom:4px;}
+
+  /* Post detail overlay */
+  .post-overlay{position:absolute;inset:0;z-index:60;background:var(--paper);display:none;flex-direction:column;}
+  .post-overlay.open{display:flex;}
+  .post-art{flex:1;display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer;padding:10px;}
+  .post-art .art-svg,.post-art .art-img{width:auto;height:auto;max-width:96%;max-height:96%;object-fit:contain;}
+  .post-x{
+    position:absolute;top:12px;right:12px;z-index:5;background:#fff;border:2.5px solid var(--ink);
+    border-radius:50%;width:40px;height:40px;display:flex;align-items:center;justify-content:center;cursor:pointer;
+  }
+  .post-x svg{width:20px;height:20px;}
+  .post-nav{
+    position:absolute;right:12px;top:50%;transform:translateY(-50%);
+    display:flex;flex-direction:column;gap:10px;z-index:5;
+  }
+  .navchev{background:#fff;border:2.5px solid var(--ink);border-radius:50%;width:40px;height:40px;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+  .navchev svg{width:20px;height:20px;}
+  .hint{position:absolute;left:0;right:0;bottom:14px;text-align:center;color:var(--muted);font-size:15px;z-index:4;pointer-events:none;}
+  .post-info{
+    flex-shrink:0;border-top:3px solid var(--ink);background:#fff;padding:10px 14px;
+  }
+  .post-info .pi-title{font-family:var(--marker);font-size:19px;text-align:center;margin-bottom:8px;}
+  .pi-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .creator-chip{display:flex;align-items:center;gap:7px;cursor:pointer;}
+  .creator-chip .ava{width:32px;height:32px;border:2px solid var(--ink);border-radius:50%;overflow:hidden;}
+  .creator-chip .ava svg{width:100%;height:100%;}
+  .pill{border:2px solid var(--ink);border-radius:999px;padding:3px 11px;font-size:14px;background:#fff;cursor:pointer;}
+  .pill.red{background:var(--red);color:#fff;}
+  .media-chip{border:2px solid var(--ink);border-radius:8px;padding:3px 10px;font-size:14px;background:var(--paper2);}
+  .pi-react{margin-left:auto;display:flex;align-items:center;gap:10px;font-size:18px;}
+  .pi-react .num{font-size:15px;}
+  .emoji-btn{cursor:pointer;background:none;border:none;font-size:20px;padding:0;line-height:1;}
+  .heart-btn{cursor:pointer;background:none;border:none;display:flex;align-items:center;gap:3px;font-size:15px;color:var(--ink);font-family:var(--hand);}
+  .heart-btn svg{width:22px;height:22px;}
+
+  /* Upload */
+  .steps{display:flex;gap:6px;justify-content:center;margin-bottom:14px;}
+  .step-dot{width:24px;height:24px;border:2px solid var(--ink);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;background:#fff;}
+  .step-dot.on{background:var(--green);}
+  .step-dot.done{background:var(--ink);color:#fff;}
+  .up-h{font-family:var(--marker);font-size:21px;text-align:center;margin-bottom:12px;}
+  .pick-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+  .pick{border:3px solid var(--ink);border-radius:12px;aspect-ratio:1/1;overflow:hidden;cursor:pointer;background:#fff;}
+  .pick.sel{outline:4px solid var(--green);outline-offset:0;}
+  .up-input{width:100%;font-family:var(--hand);font-size:18px;border:2.5px solid var(--ink);border-radius:10px;padding:10px 14px;outline:none;}
+  .up-preview{border:3px solid var(--ink);border-radius:14px;overflow:hidden;width:170px;height:170px;margin:0 auto 12px;background:#fff;}
+  .up-nav{display:flex;gap:10px;justify-content:space-between;margin-top:auto;padding-top:14px;}
+  .file-label{display:block;text-align:center;margin-top:12px;color:var(--muted);font-size:15px;}
+  .file-label span{text-decoration:underline;cursor:pointer;color:var(--ink);}
+  .file-label input{display:none;}
+
+  /* Bot screen */
+  .bot-top{flex-shrink:0;padding:8px 12px;border-bottom:2px solid var(--ink);display:flex;align-items:center;gap:8px;}
+  .bot-top .bava{width:34px;height:34px;border:2px solid var(--ink);border-radius:50%;overflow:hidden;background:#fff;}
+  .bot-top .bava svg{width:100%;height:100%;}
+  .bot-top .bname{font-family:var(--marker);font-size:18px;}
+  .bot-top .newchat{margin-left:auto;font-size:14px;}
+  .recent{display:flex;gap:8px;overflow-x:auto;padding:8px 12px 0;}
+  .recent::-webkit-scrollbar{height:0;}
+  .recent .rc{flex-shrink:0;border:2px solid var(--ink);border-radius:999px;padding:4px 12px;font-size:14px;background:var(--paper2);cursor:pointer;white-space:nowrap;}
+  .bot-thread{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:12px;}
+  .bot-thread::-webkit-scrollbar{width:0;}
+  .msg{display:flex;gap:9px;align-items:flex-start;max-width:90%;}
+  .msg .mava{width:38px;height:38px;flex-shrink:0;}
+  .msg .mava svg{width:100%;height:100%;}
+  .bubble{background:var(--paper2);border:2.5px solid var(--ink);border-radius:16px;border-top-left-radius:4px;padding:10px 13px;font-size:17px;line-height:1.35;}
+  .msg.me{align-self:flex-end;flex-direction:row-reverse;}
+  .msg.me .bubble{background:var(--green);border-top-left-radius:16px;border-top-right-radius:4px;}
+  .msg.me .bubble img{display:block;width:130px;height:130px;object-fit:cover;border:2px solid var(--ink);border-radius:8px;}
+  .suggest{display:flex;flex-wrap:wrap;gap:8px;padding-left:47px;}
+  .suggest .sg{border:2px solid var(--ink);border-radius:999px;padding:6px 13px;font-size:15px;background:#fff;cursor:pointer;}
+  .composer{flex-shrink:0;border-top:3px solid var(--ink);padding:10px;display:flex;align-items:center;gap:8px;}
+  .composer .cam,.composer .send{width:42px;height:42px;border:2.5px solid var(--ink);border-radius:11px;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;}
+  .composer .send{background:var(--green);}
+  .composer .cam svg,.composer .send svg{width:22px;height:22px;}
+  .composer input{flex:1;font-family:var(--hand);font-size:17px;border:2.5px solid var(--ink);border-radius:999px;padding:9px 16px;outline:none;}
+
+  /* Floating bot button */
+  .bot-fab{
+    position:absolute;right:14px;bottom:16px;z-index:50;
+    width:60px;height:60px;border-radius:50%;background:#fff;border:3px solid var(--ink);
+    cursor:pointer;display:flex;align-items:center;justify-content:center;padding:6px;
+  }
+  .bot-fab svg{width:100%;height:100%;}
+  .toast{
+    position:absolute;left:50%;bottom:24px;transform:translateX(-50%);
+    background:var(--ink);color:#fff;padding:8px 16px;border-radius:999px;font-size:15px;z-index:90;
+    opacity:0;transition:opacity .2s;pointer-events:none;
+  }
+  .toast.show{opacity:1;}
+</style>
+</head>
+<body>
+  <div class="caption">Your app, for real. Tap a drawing, swipe through art, visit an artist, or say hi to <b>Sketch o' Bot</b>.</div>
+
+  <div class="phone" id="phone">
+    <!-- ===== TOP CHROME ===== -->
+    <header class="chrome">
+      <div class="logo" onclick="go('feed')">Sketch-o-Media</div>
+      <div class="chrome-actions">
+        <button class="icon-btn" aria-label="Search creators" onclick="toggleSearch()" id="searchBtn"></button>
+        <button class="icon-btn" aria-label="New post" onclick="go('upload')" id="plusBtn"></button>
+        <button class="avatar-btn" aria-label="Your profile" onclick="openProfile('pete')" id="meBtn"></button>
+      </div>
+      <div class="search-wrap" id="searchWrap" hidden>
+        <input id="searchInput" placeholder="Search creators…" oninput="onSearch(this.value)" autocomplete="off" />
+        <div class="search-results" id="searchResults"></div>
+      </div>
+    </header>
+
+    <!-- ===== SCREENS ===== -->
+    <div class="screens">
+      <section class="screen active" id="screen-feed"></section>
+      <section class="screen" id="screen-profile"></section>
+      <section class="screen" id="screen-upload"></section>
+      <section class="screen" id="screen-bot"></section>
+    </div>
+
+    <!-- ===== POST DETAIL OVERLAY ===== -->
+    <div class="post-overlay" id="postOverlay"></div>
+
+    <!-- ===== FLOATING BOT BUTTON ===== -->
+    <button class="bot-fab" id="botFab" aria-label="Open Sketch o' Bot" onclick="go('bot')"></button>
+
+    <div class="toast" id="toast"></div>
+  </div>
+
+<script>
+/* ============================================================
+   Sketch-o-Media — the BEHAVIOR (what happens when you click)
+   ============================================================ */
+
+/* ---------- little drawn icons (so it works offline) ---------- */
+const ICON = {
+  search:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>`,
+  plus:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`,
+  x:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>`,
+  up:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 15 12 9 18 15"/></svg>`,
+  down:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>`,
+  back:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 6 9 12 15 18"/></svg>`,
+  camera:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M4 8h3l1.5-2h7L17 8h3v11H4z"/><circle cx="12" cy="13" r="3.4"/></svg>`,
+  send:`<svg viewBox="0 0 24 24" fill="none" stroke="#1c1c1c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="6"/><polyline points="6 11 12 5 18 11"/></svg>`,
+  heart:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M12 20s-7-4.6-7-9.4A3.6 3.6 0 0 1 12 8a3.6 3.6 0 0 1 7 2.6C19 15.4 12 20 12 20z"/></svg>`,
+  heartFull:`<svg viewBox="0 0 24 24" fill="#E5394A" stroke="#1c1c1c" stroke-width="2.2" stroke-linejoin="round"><path d="M12 20s-7-4.6-7-9.4A3.6 3.6 0 0 1 12 8a3.6 3.6 0 0 1 7 2.6C19 15.4 12 20 12 20z"/></svg>`,
+};
+
+/* ---------- the bunny mascot (Sketch o' Bot) ---------- */
+const BUNNY = `<svg viewBox="0 0 64 80"><g fill="#9CC23F" stroke="#1c1c1c" stroke-width="3.2" stroke-linejoin="round"><rect x="20" y="6" width="9" height="34" rx="4.5" transform="rotate(-6 24.5 23)"/><rect x="35" y="6" width="9" height="34" rx="4.5" transform="rotate(6 39.5 23)"/><rect x="10" y="30" width="44" height="42" rx="13"/></g><g stroke="#1c1c1c" stroke-width="3" stroke-linecap="round" fill="none"><line x1="25" y1="46" x2="25" y2="54"/><line x1="39" y1="46" x2="39" y2="54"/><path d="M32 56 L32 62 M32 62 L28.5 66 M32 62 L35.5 66"/></g><rect x="29" y="48" width="6" height="6" rx="1.2" fill="none" stroke="#1c1c1c" stroke-width="2.4"/></svg>`;
+
+/* ---------- helper: a simple doodle face ---------- */
+function face(parts){
+  return `<svg viewBox="0 0 100 100" class="art-svg"><circle cx="50" cy="50" r="33" fill="${parts.bg||'#fff'}" stroke="#1c1c1c" stroke-width="3.2"/>${parts.extra||''}</svg>`;
+}
+
+/* ---------- ARTWORK (drawn as code so nothing else is needed) ---------- */
+const ART = {
+  sick: face({extra:`<path d="M34 45 q5 -5 10 0" fill="none" stroke="#1c1c1c" stroke-width="3" stroke-linecap="round"/><path d="M56 45 q5 -5 10 0" fill="none" stroke="#1c1c1c" stroke-width="3" stroke-linecap="round"/><ellipse cx="35" cy="58" rx="6" ry="4" fill="#e07b7b" opacity=".55"/><ellipse cx="65" cy="58" rx="6" ry="4" fill="#e07b7b" opacity=".55"/><path d="M38 66 q4 -5 7 0 t7 0 t7 0" fill="none" stroke="#1c1c1c" stroke-width="3" stroke-linecap="round"/><path d="M78 40 q3 6 0 9 q-3 -3 0 -9" fill="#7ec8ff" stroke="#1c1c1c" stroke-width="1.5"/>`}),
+  sleepy: face({extra:`<path d="M33 50 q6 5 11 0" fill="none" stroke="#1c1c1c" stroke-width="3" stroke-linecap="round"/><path d="M56 50 q6 5 11 0" fill="none" stroke="#1c1c1c" stroke-width="3" stroke-linecap="round"/><circle cx="50" cy="66" r="4" fill="none" stroke="#1c1c1c" stroke-width="3"/><text x="70" y="34" font-family="Permanent Marker" font-size="13" fill="#1c1c1c">z</text><text x="78" y="26" font-family="Permanent Marker" font-size="10" fill="#1c1c1c">z</text>`}),
+  happy: face({extra:`<path d="M34 48 q5 -6 10 0" fill="none" stroke="#1c1c1c" stroke-width="3" stroke-linecap="round"/><path d="M56 48 q5 -6 10 0" fill="none" stroke="#1c1c1c" stroke-width="3" stroke-linecap="round"/><path d="M36 58 q14 16 28 0" fill="none" stroke="#1c1c1c" stroke-width="3" stroke-linecap="round"/><ellipse cx="33" cy="58" rx="5" ry="3" fill="#f3a" opacity=".35"/><ellipse cx="67" cy="58" rx="5" ry="3" fill="#f3a" opacity=".35"/>`}),
+  grumpy: face({extra:`<path d="M33 44 l11 5" stroke="#1c1c1c" stroke-width="3" stroke-linecap="round"/><path d="M67 44 l-11 5" stroke="#1c1c1c" stroke-width="3" stroke-linecap="round"/><circle cx="40" cy="54" r="2.4" fill="#1c1c1c"/><circle cx="60" cy="54" r="2.4" fill="#1c1c1c"/><path d="M40 68 q10 -6 20 0" fill="none" stroke="#1c1c1c" stroke-width="3" stroke-linecap="round"/>`}),
+  evil: face({bg:'#fff',extra:`<path d="M32 44 l12 6" stroke="#1c1c1c" stroke-width="3" stroke-linecap="round"/><path d="M68 44 l-12 6" stroke="#1c1c1c" stroke-width="3" stroke-linecap="round"/><circle cx="41" cy="55" r="2.6" fill="#1c1c1c"/><circle cx="59" cy="55" r="2.6" fill="#1c1c1c"/><path d="M34 62 l5 7 l5 -7 l5 7 l5 -7 l5 7 l5 -7" fill="none" stroke="#1c1c1c" stroke-width="2.6" stroke-linejoin="round"/><path d="M22 30 l5 6 M78 30 l-5 6" stroke="#E5394A" stroke-width="3" stroke-linecap="round"/>`}),
+  dragon:`<svg viewBox="0 0 100 100" class="art-svg"><rect width="100" height="100" fill="#fff"/><path d="M26 38 l6 -11 l6 11 z" fill="#7CC242" stroke="#1c1c1c" stroke-width="2.6" stroke-linejoin="round"/><path d="M40 36 l6 -12 l6 12 z" fill="#7CC242" stroke="#1c1c1c" stroke-width="2.6" stroke-linejoin="round"/><ellipse cx="50" cy="60" rx="29" ry="21" fill="#7CC242" stroke="#1c1c1c" stroke-width="3.2"/><circle cx="42" cy="56" r="4" fill="#fff" stroke="#1c1c1c" stroke-width="2"/><circle cx="42" cy="56" r="1.6" fill="#1c1c1c"/><path d="M40 68 q10 6 20 0" fill="none" stroke="#1c1c1c" stroke-width="2.6" stroke-linecap="round"/><path d="M74 54 q12 -4 16 6 q-9 -1 -16 1" fill="#7CC242" stroke="#1c1c1c" stroke-width="2.6" stroke-linejoin="round"/><circle cx="63" cy="58" r="1.8" fill="#1c1c1c"/><circle cx="69" cy="60" r="1.8" fill="#1c1c1c"/></svg>`,
+  rainbow:`<svg viewBox="0 0 100 100" class="art-svg"><rect width="100" height="100" fill="#fff"/><path d="M14 82 a36 36 0 0 1 72 0" fill="none" stroke="#E5394A" stroke-width="6"/><path d="M22 82 a28 28 0 0 1 56 0" fill="none" stroke="#F2A33B" stroke-width="6"/><path d="M30 82 a20 20 0 0 1 40 0" fill="none" stroke="#3DBA6E" stroke-width="6"/><path d="M38 82 a12 12 0 0 1 24 0" fill="none" stroke="#3B82E5" stroke-width="6"/><circle cx="78" cy="26" r="9" fill="#FFD66B" stroke="#1c1c1c" stroke-width="2.4"/></svg>`,
+  hills:`<svg viewBox="0 0 100 100" class="art-svg"><rect width="100" height="100" fill="#eaf6ff"/><circle cx="74" cy="30" r="11" fill="#FFD66B" stroke="#1c1c1c" stroke-width="2"/><path d="M-2 86 Q26 52 56 86 Z" fill="#bfe3c2" stroke="#1c1c1c" stroke-width="2.4"/><path d="M40 90 Q72 50 104 90 Z" fill="#9fd0a8" stroke="#1c1c1c" stroke-width="2.4"/></svg>`,
+  dog:`<svg viewBox="0 0 100 100" class="art-svg"><rect width="100" height="100" fill="#fff"/><rect x="30" y="22" width="14" height="20" fill="#9b6b43" stroke="#1c1c1c" stroke-width="2"/><rect x="56" y="22" width="14" height="20" fill="#9b6b43" stroke="#1c1c1c" stroke-width="2"/><rect x="30" y="36" width="40" height="34" fill="#C89B6B" stroke="#1c1c1c" stroke-width="2.6"/><rect x="38" y="48" width="7" height="7" fill="#1c1c1c"/><rect x="55" y="48" width="7" height="7" fill="#1c1c1c"/><rect x="44" y="60" width="12" height="7" fill="#1c1c1c"/></svg>`,
+  clay:`<svg viewBox="0 0 100 100" class="art-svg"><rect width="100" height="100" fill="#fff"/><path d="M28 74 Q18 44 38 36 Q50 30 62 36 Q84 46 72 74 Q50 84 28 74 Z" fill="#D98E5A" stroke="#1c1c1c" stroke-width="3.2"/><circle cx="43" cy="54" r="3" fill="#1c1c1c"/><circle cx="60" cy="54" r="3" fill="#1c1c1c"/><path d="M42 64 q9 7 18 0" fill="none" stroke="#1c1c1c" stroke-width="2.6" stroke-linecap="round"/></svg>`,
+  slime:`<svg viewBox="0 0 100 100" class="art-svg"><rect width="100" height="100" fill="#fff"/><path d="M24 72 Q18 40 50 40 Q82 40 76 72 Q72 80 64 74 Q58 82 50 74 Q42 82 36 74 Q28 80 24 72 Z" fill="#8FD46A" stroke="#1c1c1c" stroke-width="3.2"/><circle cx="42" cy="58" r="3.4" fill="#1c1c1c"/><circle cx="60" cy="58" r="3.4" fill="#1c1c1c"/><path d="M44 66 q6 5 12 0" fill="none" stroke="#1c1c1c" stroke-width="2.6" stroke-linecap="round"/></svg>`,
+  broke:`<svg viewBox="0 0 100 100" class="art-svg"><rect width="100" height="100" fill="#fff"/><text x="50" y="40" text-anchor="middle" font-family="Permanent Marker" font-size="20" fill="#1c1c1c">I Am</text><text x="50" y="70" text-anchor="middle" font-family="Permanent Marker" font-size="24" fill="#E5394A">BROKE</text></svg>`,
+  smile2:`<svg viewBox="0 0 100 100" class="art-svg"><rect width="100" height="100" fill="#FFF6D6"/><circle cx="50" cy="50" r="30" fill="#FFD66B" stroke="#1c1c1c" stroke-width="3.2"/><circle cx="40" cy="46" r="3" fill="#1c1c1c"/><circle cx="60" cy="46" r="3" fill="#1c1c1c"/><path d="M36 58 q14 14 28 0" fill="none" stroke="#1c1c1c" stroke-width="3" stroke-linecap="round"/></svg>`,
+};
+
+/* ---------- artists ---------- */
+const CREATORS = {
+  pete:{name:"Stinky Pete", followers:447, desc:"I make daily art of how I feel.", ava:face({extra:`<path d="M40 48 v6 M60 48 v6" stroke="#1c1c1c" stroke-width="3" stroke-linecap="round"/><path d="M42 64 q8 5 16 0" fill="none" stroke="#1c1c1c" stroke-width="2.6" stroke-linecap="round"/><text x="64" y="34" font-family="Permanent Marker" font-size="13" fill="#E5394A">!</text>`})},
+  riot:{name:"Riot Ruler", followers:47000, desc:"I'm a guy who makes INSANE ART.", ava:ART.evil},
+  dragon:{name:"Doodle Dragon", followers:1200, desc:"I draw little monsters all day.", ava:ART.dragon},
+  crayon:{name:"Crayon Queen", followers:3400, desc:"Color is my best friend!", ava:`<svg viewBox="0 0 100 100"><circle cx="50" cy="52" r="31" fill="#fff" stroke="#1c1c1c" stroke-width="3.2"/><path d="M30 30 l8 -10 l8 10 l8 -10 l8 10 z" fill="#FFD66B" stroke="#1c1c1c" stroke-width="2.4" stroke-linejoin="round"/><circle cx="41" cy="52" r="3" fill="#1c1c1c"/><circle cx="59" cy="52" r="3" fill="#1c1c1c"/><path d="M40 62 q10 9 20 0" fill="none" stroke="#1c1c1c" stroke-width="2.6" stroke-linecap="round"/></svg>`},
+  pup:{name:"Pixel Pup", followers:890, desc:"Blocky doggos and good vibes.", ava:ART.dog},
+  misty:{name:"Misty Meadows", followers:2100, desc:"Calm watercolor worlds.", ava:face({extra:`<path d="M34 50 q5 4 10 0 M56 50 q5 4 10 0" fill="none" stroke="#1c1c1c" stroke-width="3" stroke-linecap="round"/><path d="M42 62 q8 4 16 0" fill="none" stroke="#1c1c1c" stroke-width="2.4" stroke-linecap="round"/>`})},
+};
+
+/* ---------- posts (hearts decide the ranking) ---------- */
+let POSTS = [
+  {id:1, by:"pete",   title:"I don't feel so good", media:"Pencil",     hearts:4200,  art:{type:'svg',svg:ART.sick}},
+  {id:2, by:"riot",   title:"Evil Artist",          media:"Marker",     hearts:38000, art:{type:'svg',svg:ART.evil}},
+  {id:3, by:"riot",   title:"I Am Broke",           media:"Pen",        hearts:21000, art:{type:'svg',svg:ART.broke}},
+  {id:4, by:"crayon", title:"Rainbow Day",          media:"Crayon",     hearts:3300,  art:{type:'svg',svg:ART.rainbow}},
+  {id:5, by:"misty",  title:"Quiet Hills",          media:"Watercolor", hearts:2600,  art:{type:'svg',svg:ART.hills}},
+  {id:6, by:"dragon", title:"Spike the Dragon",     media:"Pen",        hearts:1500,  art:{type:'svg',svg:ART.dragon}},
+  {id:7, by:"pete",   title:"So sleepy",            media:"Pencil",     hearts:1300,  art:{type:'svg',svg:ART.sleepy}},
+  {id:8, by:"pup",    title:"Good Boy",             media:"Pen",        hearts:1100,  art:{type:'svg',svg:ART.dog}},
+  {id:9, by:"pup",    title:"Clay Buddy",           media:"Clay",       hearts:980,   art:{type:'svg',svg:ART.clay}},
+  {id:10,by:"pete",   title:"Monday again",         media:"Charcoal",   hearts:920,   art:{type:'svg',svg:ART.grumpy}},
+  {id:11,by:"crayon", title:"Sunny Smile",          media:"Crayon",     hearts:760,   art:{type:'svg',svg:ART.smile2}},
+  {id:12,by:"pete",   title:"Happy today!",         media:"Marker",     hearts:640,   art:{type:'svg',svg:ART.happy}},
+  {id:13,by:"dragon", title:"Tiny Slime",           media:"Pencil",     hearts:540,   art:{type:'svg',svg:ART.slime}},
+];
+
+const MEDIA_TYPES = ["All","Pencil","Pen","Marker","Charcoal","Watercolor","Crayon","Clay"];
+
+/* ---------- app memory (state) ---------- */
+const state = {
+  screen:'feed',
+  filter:'All',
+  following:new Set(['dragon']),
+  hearted:new Set(),
+  reacted:new Set(),
+  postList:[], postIndex:0, infoRevealed:false,
+  profileId:'pete',
+  upload:{step:1, art:null, title:'', media:null},
+  botVisited:false,
+  botMessages:[],
+  newId:14,
+};
+
+/* ---------- tiny helpers ---------- */
+function fmt(n){ if(n>=1000){ let k=n/1000; return (k>=10?Math.round(k):(Math.round(k*10)/10)).toString().replace(/\.0$/,'')+'K'; } return ''+n; }
+function heartsOf(p){ return p.hearts + (state.hearted.has(p.id)?1:0); }
+function artHTML(art){ return art.type==='img' ? `<img src="${art.src}" class="art-svg" alt=""/>` : art.svg; }
+function topPosts(){ return [...POSTS].sort((a,b)=>heartsOf(b)-heartsOf(a)); }
+function toast(t){ const el=document.getElementById('toast'); el.textContent=t; el.classList.add('show'); clearTimeout(el._t); el._t=setTimeout(()=>el.classList.remove('show'),1600); }
+
+/* ---------- set up the fixed icons ---------- */
+document.getElementById('searchBtn').innerHTML = ICON.search;
+document.getElementById('plusBtn').innerHTML = ICON.plus;
+document.getElementById('meBtn').innerHTML = CREATORS.pete.ava;
+document.getElementById('botFab').innerHTML = BUNNY;
+
+/* ---------- screen switching ---------- */
+function activate(name){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  const el=document.getElementById('screen-'+name); if(el) el.classList.add('active');
+  state.screen=name;
+  document.getElementById('botFab').style.display=(name==='bot')?'none':'flex';
+  hideSearch();
+}
+function go(name){
+  closePost();
+  activate(name);
+  if(name==='feed') renderFeed();
+  if(name==='upload'){ state.upload={step:1,art:null,title:'',media:null}; renderUpload(); }
+  if(name==='bot') renderBot();
+}
+
+/* ================= FEED ================= */
+function renderFeed(){
+  const list = topPosts().filter(p=> state.filter==='All' || p.media===state.filter);
+  const filters = MEDIA_TYPES.map(m=>`<div class="chip ${m===state.filter?'on':''}" onclick="setFilter('${m}')">${m}</div>`).join('');
+  const cards2 = list.map((p,i)=>{
+    const c=CREATORS[p.by];
+    return `<div class="card" onclick="openPost('feed',${p.id})">
+      <div class="art-box"><span class="rank">${i+1}</span>${artHTML(p.art)}</div>
+      <div class="c-title">${p.title}</div>
+      <div class="c-meta">${c.name}</div>
+      <div class="c-react"><span>🙂</span><span>👍</span><span class="react-num" style="display:flex;align-items:center;gap:3px;color:#E5394A">❤️ ${fmt(heartsOf(p))}</span></div>
+    </div>`;
+  }).join('');
+  document.getElementById('screen-feed').innerHTML = `
+    <div class="scroll">
+      <div class="screen-title">Top Posts</div>
+      <div class="filters">${filters}</div>
+      <div class="grid">${cards2}</div>
+      ${list.length===0?'<p style="color:#7a756c;text-align:center;margin-top:30px">No art in this style yet. Try another!</p>':''}
+    </div>`;
+}
+function setFilter(m){ state.filter=m; renderFeed(); }
+
+/* ================= POST DETAIL ================= */
+function listFor(kind, id){
+  let arr;
+  if(kind.startsWith('profile:')){ const cid=kind.split(':')[1]; arr=POSTS.filter(p=>p.by===cid); }
+  else arr = topPosts().filter(p=> state.filter==='All'||p.media===state.filter);
+  return arr;
+}
+function openPost(kind, id){
+  state.postKind = kind;
+  state.postList = listFor(kind, id);
+  state.postIndex = Math.max(0, state.postList.findIndex(p=>p.id===id));
+  state.infoRevealed = false;
+  document.getElementById('botFab').style.display='none';
+  const ov=document.getElementById('postOverlay'); ov.classList.add('open');
+  renderPost();
+}
+function closePost(){
+  const ov=document.getElementById('postOverlay'); ov.classList.remove('open');
+  if(state.screen!=='bot') document.getElementById('botFab').style.display='flex';
+}
+function renderPost(){
+  const p=state.postList[state.postIndex]; if(!p) return;
+  const c=CREATORS[p.by];
+  const following = state.following.has(p.by);
+  const hearted = state.hearted.has(p.id);
+  const info = state.infoRevealed ? `
+    <div class="post-info">
+      <div class="pi-title">${p.title}</div>
+      <div class="pi-row">
+        <div class="creator-chip" onclick="openProfile('${p.by}')">
+          <div class="ava">${c.ava}</div><span>${c.name}</span>
+        </div>
+        ${ p.by!=='pete' && !following ? `<span class="pill red" onclick="event.stopPropagation();toggleFollow('${p.by}')">+ Follow</span>`:''}
+        <span class="media-chip">${p.media}</span>
+        <span class="pi-react">
+          <button class="emoji-btn" title="Smile" onclick="event.stopPropagation();bump('🙂')">🙂</button>
+          <button class="emoji-btn" title="Thumbs up" onclick="event.stopPropagation();bump('👍')">👍</button>
+          <button class="heart-btn" onclick="event.stopPropagation();toggleHeart(${p.id})">${hearted?ICON.heartFull:ICON.heart}<span class="num" style="color:#E5394A">${fmt(heartsOf(p))}</span></button>
+        </span>
+      </div>
+    </div>` : '';
+  document.getElementById('postOverlay').innerHTML = `
+    <div class="post-x" onclick="closePost()">${ICON.x}</div>
+    <div class="post-nav">
+      <div class="navchev" onclick="prevPost()">${ICON.up}</div>
+      <div class="navchev" onclick="nextPost()">${ICON.down}</div>
+    </div>
+    <div class="post-art" onclick="toggleInfo()">
+      ${artHTML(p.art)}
+      ${!state.infoRevealed?'<div class="hint">tap the art to see who made it ·  ⌃ ⌄ for next</div>':''}
+    </div>
+    ${info}`;
+}
+function toggleInfo(){ state.infoRevealed=!state.infoRevealed; renderPost(); }
+function nextPost(){ state.postIndex=(state.postIndex+1)%state.postList.length; state.infoRevealed=false; renderPost(); }
+function prevPost(){ state.postIndex=(state.postIndex-1+state.postList.length)%state.postList.length; state.infoRevealed=false; renderPost(); }
+function toggleHeart(id){ if(state.hearted.has(id)) state.hearted.delete(id); else state.hearted.add(id); renderPost(); }
+function bump(e){ toast(e+'  reaction sent!'); }
+
+/* ================= PROFILE ================= */
+function openProfile(id){
+  closePost();
+  state.profileId=id;
+  activate('profile');
+  renderProfile(id);
+}
+function renderProfile(id){
+  const c=CREATORS[id];
+  const mine = id==='pete';
+  const following = state.following.has(id);
+  const posts = POSTS.filter(p=>p.by===id).sort((a,b)=>heartsOf(b)-heartsOf(a));
+  const btn = mine
+    ? `<button class="btn" onclick="toast('Editing your profile — coming soon!')">Edit</button>`
+    : `<button class="btn ${following?'following':'follow'}" onclick="toggleFollow('${id}');renderProfile('${id}')">${following?'Following ✓':'Follow'}</button>`;
+  const grid = posts.map(p=>`
+    <div class="card" onclick="openPost('profile:${id}',${p.id})">
+      <div class="art-box">${artHTML(p.art)}</div>
+      <div class="c-react" style="justify-content:center"><span style="color:#E5394A">❤️ ${fmt(heartsOf(p))}</span></div>
+    </div>`).join('');
+  document.getElementById('screen-profile').innerHTML = `
+    <div class="scroll">
+      <div class="back-row"><button class="back-btn" onclick="go('feed')">${ICON.back} Home</button></div>
+      <div class="p-head">
+        <div class="p-ava">${c.ava}</div>
+        <div style="flex:1">
+          <div class="p-name">${c.name}</div>
+          <div class="p-followers">${fmt(c.followers)||c.followers} followers</div>
+          ${btn}
+        </div>
+      </div>
+      <div class="p-desc">Description: ${c.desc}</div>
+      <div class="p-posts-label">Posts</div>
+      <div class="grid">${grid}</div>
+    </div>`;
+}
+function toggleFollow(id){
+  if(state.following.has(id)){ state.following.delete(id); toast('Unfollowed '+CREATORS[id].name); }
+  else { state.following.add(id); toast('Now following '+CREATORS[id].name+'! 🎉'); }
+  if(document.getElementById('postOverlay').classList.contains('open')) renderPost();
+}
+
+/* ================= SEARCH ================= */
+function toggleSearch(){
+  const w=document.getElementById('searchWrap');
+  if(w.hidden){ w.hidden=false; document.getElementById('searchInput').focus(); onSearch(''); }
+  else hideSearch();
+}
+function hideSearch(){ const w=document.getElementById('searchWrap'); if(w){ w.hidden=true; const i=document.getElementById('searchInput'); if(i) i.value=''; } }
+function onSearch(q){
+  q=q.trim().toLowerCase();
+  const ids=Object.keys(CREATORS).filter(id=> CREATORS[id].name.toLowerCase().includes(q));
+  const html = ids.length? ids.map(id=>{
+    const c=CREATORS[id];
+    return `<div class="search-row" onclick="openProfile('${id}')">
+      <div class="ava">${c.ava}</div><div class="nm">${c.name}</div><div class="fc">${fmt(c.followers)||c.followers}</div>
+    </div>`;
+  }).join('') : `<div class="search-empty">No creators found.</div>`;
+  document.getElementById('searchResults').innerHTML=html;
+}
+
+/* ================= UPLOAD (5 steps) ================= */
+const SAMPLE_ART = ['happy','grumpy','sleepy','rainbow','dragon','slime'];
+function renderUpload(){
+  const u=state.upload;
+  const dots=[1,2,3,4,5].map(n=>`<div class="step-dot ${n===u.step?'on':(n<u.step?'done':'')}">${n<u.step?'✓':n}</div>`).join('');
+  let body='';
+  if(u.step===1){
+    const picks=SAMPLE_ART.map(k=>`<div class="pick ${u.art&&u.art.key===k?'sel':''}" onclick="pickArt('${k}')">${ART[k]}</div>`).join('');
+    body=`<div class="up-h">Pick your drawing</div>
+      <div class="pick-grid">${picks}</div>
+      <label class="file-label">…or <span>upload a photo</span> of a real drawing<input type="file" accept="image/*" onchange="uploadPhoto(event)"></label>`;
+  } else if(u.step===2){
+    body=`<div class="up-h">Give it a title</div>
+      <div class="up-preview">${u.art?artHTML(u.art):''}</div>
+      <input class="up-input" id="upTitle" placeholder="Type a title…" value="${u.title.replace(/"/g,'&quot;')}" oninput="state.upload.title=this.value">`;
+  } else if(u.step===3){
+    const opts=MEDIA_TYPES.filter(m=>m!=='All').map(m=>`<div class="chip ${u.media===m?'on':''}" onclick="state.upload.media='${m}';renderUpload()">${m}</div>`).join('');
+    body=`<div class="up-h">What did you use?</div>
+      <div class="up-preview">${u.art?artHTML(u.art):''}</div>
+      <div class="filters" style="flex-wrap:wrap;justify-content:center">${opts}</div>`;
+  } else if(u.step===4){
+    body=`<div class="up-h">Look good? Post it!</div>
+      <div class="up-preview">${u.art?artHTML(u.art):''}</div>
+      <div style="text-align:center;font-size:18px">“${u.title||'Untitled'}”</div>
+      <div style="text-align:center;color:#7a756c;margin-top:4px">${u.media||'—'} · by Stinky Pete (you)</div>`;
+  }
+  const back = u.step>1?`<button class="btn" onclick="upStep(-1)">Back</button>`:`<button class="btn" onclick="go('feed')">Cancel</button>`;
+  let next;
+  if(u.step<4){
+    const ready = (u.step===1&&u.art)||(u.step===2&&u.title.trim())||(u.step===3&&u.media);
+    next=`<button class="btn green" onclick="upStep(1)" ${ready?'':'style="opacity:.4"'}>Next</button>`;
+  } else {
+    next=`<button class="btn green" onclick="finishUpload()">Post it! 🎉</button>`;
+  }
+  document.getElementById('screen-upload').innerHTML=`
+    <div class="scroll" style="display:flex;flex-direction:column">
+      <div class="back-row"><button class="back-btn" onclick="go('feed')">${ICON.back} Home</button></div>
+      <div class="steps">${dots}</div>
+      ${body}
+      <div class="up-nav">${back}${next}</div>
+    </div>`;
+}
+function pickArt(k){ state.upload.art={type:'svg',svg:ART[k],key:k}; renderUpload(); }
+function uploadPhoto(ev){
+  const f=ev.target.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=()=>{ state.upload.art={type:'img',src:r.result,key:'photo'}; renderUpload(); };
+  r.readAsDataURL(f);
+}
+function upStep(d){
+  const u=state.upload;
+  if(d>0){
+    if(u.step===1&&!u.art) return toast('Pick a drawing first!');
+    if(u.step===2&&!u.title.trim()) return toast('Add a title!');
+    if(u.step===3&&!u.media) return toast('Choose a media type!');
+  }
+  u.step=Math.min(4,Math.max(1,u.step+d));
+  renderUpload();
+}
+function finishUpload(){
+  const u=state.upload;
+  const post={id:state.newId++, by:'pete', title:u.title.trim()||'Untitled', media:u.media||'Pencil', hearts:0, art:u.art};
+  POSTS.push(post);
+  toast('Posted! 🎉 Your art is live.');
+  openPost('profile:pete', post.id);
+  // also make sure profile is the screen behind the overlay
+  activateBehind('profile'); renderProfile('pete');
+}
+function activateBehind(name){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); const el=document.getElementById('screen-'+name); if(el) el.classList.add('active'); state.screen=name; }
+
+/* ================= SKETCH O' BOT ================= */
+const RECENTS = [
+  {title:"My watercolor practice"},
+  {title:"Drawing hands help"},
+];
+function renderBot(){
+  const recent = RECENTS.map(r=>`<div class="rc" onclick="openRecent('${r.title}')">${r.title}</div>`).join('');
+  document.getElementById('screen-bot').innerHTML=`
+    <div class="bot-top">
+      <div class="bava">${BUNNY}</div>
+      <div class="bname">Sketch o' Bot</div>
+      <button class="back-btn newchat" onclick="newChat()">+ New chat</button>
+    </div>
+    <div class="recent">${recent}<div class="rc" onclick="go('feed')">‹ Home</div></div>
+    <div class="bot-thread" id="botThread"></div>
+    <div class="composer">
+      <button class="cam" aria-label="Show a drawing" onclick="botCamera()">${ICON.camera}</button>
+      <input id="botInput" placeholder="Ask Sketch o' Bot…" onkeydown="if(event.key==='Enter')botSend()">
+      <button class="send" aria-label="Send" onclick="botSend()">${ICON.send}</button>
+    </div>`;
+  if(!state.botVisited && state.botMessages.length===0){
+    state.botMessages.push({who:'bot', text:"Hi! I'm Sketch o' Bot. Show me a drawing, or ask me anything about making art!", suggest:true});
+    state.botVisited=true;
+  }
+  drawThread();
+}
+function drawThread(){
+  const t=document.getElementById('botThread'); if(!t) return;
+  t.innerHTML = state.botMessages.map(m=>{
+    if(m.who==='bot'){
+      const sg = m.suggest? `<div class="suggest">
+        <div class="sg" onclick="botSend('How do I shade with pencil?')">How do I shade with pencil?</div>
+        <div class="sg" onclick="botSend('Help me blend watercolors')">Help me blend watercolors</div>
+        <div class="sg" onclick="botSend('Critique my drawing')">Critique my drawing</div></div>`:'';
+      return `<div class="msg"><div class="mava">${BUNNY}</div><div><div class="bubble">${m.text}</div></div></div>${sg}`;
+    }
+    const inner = m.img? `<img src="${m.img}" alt="">` : m.text;
+    return `<div class="msg me"><div class="bubble">${inner}</div></div>`;
+  }).join('');
+  t.scrollTop=t.scrollHeight;
+}
+function botReply(text){
+  const q=(text||'').toLowerCase();
+  if(q.includes('shade')||q.includes('pencil')) return "Great question! For smooth pencil shading, hold the pencil at a low angle and build up tone in light layers — soft first, then darker. Shade in tiny circles to avoid harsh lines. Want to show me? Tap the camera!";
+  if(q.includes('watercolor')||q.includes('blend')) return "Watercolor blending is so fun! Wet the paper first, then drop two colors next to each other while it's still shiny — they melt together on their own. Less water = more control, more water = dreamy blends. You've got this!";
+  if(q.includes('critique')||q.includes('feedback')) return "I'd love to! Tap the little camera button and show me your drawing — I'll tell you my favorite things about it, plus one tip to level up. 🎨";
+  if(q.includes('hand')) return "Hands are tricky for EVERYONE — even the pros! Start by drawing a soft mitten shape, then add the fingers as simple tubes. Look at your own hand while you draw. Practice 2 minutes a day and you'll be amazed in a week!";
+  return "I love that you're thinking about art! Tell me what you're working on, or tap a suggestion and I'll help. Remember: every great artist started exactly where you are right now. ✏️";
+}
+function botSend(preset){
+  const input=document.getElementById('botInput');
+  const text = preset!==undefined? preset : (input? input.value.trim():'');
+  if(!text) return;
+  if(input) input.value='';
+  // clear the suggest flag on old welcome
+  state.botMessages.forEach(m=>m.suggest=false);
+  state.botMessages.push({who:'me', text});
+  drawThread();
+  setTimeout(()=>{ state.botMessages.push({who:'bot', text:botReply(text)}); drawThread(); }, 450);
+}
+function botCamera(){
+  state.botMessages.forEach(m=>m.suggest=false);
+  state.botMessages.push({who:'me', img:'data:image/svg+xml;utf8,'+encodeURIComponent(ART.happy)});
+  drawThread();
+  setTimeout(()=>{ state.botMessages.push({who:'bot', text:"Whoa, I love this! The energy in your lines is awesome and the face has so much personality. One tip: try a darker shadow on one side to make it pop off the page. Keep going — you're getting better every single day! ⭐"}); drawThread(); }, 500);
+}
+function newChat(){ state.botMessages=[]; state.botVisited=false; renderBot(); }
+function openRecent(title){
+  state.botMessages=[
+    {who:'me', text: title==='My watercolor practice'?'Help me blend watercolors':'Help me draw hands'},
+    {who:'bot', text: botReply(title==='My watercolor practice'?'watercolor':'hand')},
+  ];
+  drawThread();
+}
+
+/* ---------- keyboard + swipe for the post viewer ---------- */
+document.addEventListener('keydown',e=>{
+  if(!document.getElementById('postOverlay').classList.contains('open')) return;
+  if(e.key==='ArrowDown') nextPost();
+  if(e.key==='ArrowUp') prevPost();
+  if(e.key==='Escape') closePost();
+});
+let touchY=null;
+const ovEl=document.getElementById('postOverlay');
+ovEl.addEventListener('touchstart',e=>{ touchY=e.touches[0].clientY; },{passive:true});
+ovEl.addEventListener('touchend',e=>{
+  if(touchY===null) return;
+  const dy=e.changedTouches[0].clientY-touchY;
+  if(dy<-50) nextPost(); else if(dy>50) prevPost();
+  touchY=null;
+});
+
+/* ---------- start the app ---------- */
+renderFeed();
+</script>
+</body>
+</html>
