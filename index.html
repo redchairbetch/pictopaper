@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Permanent+Marker&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <style>
   /* ===== Sketch-o-Media — the LOOK (style) =====
      Brand rule: white paper, red top "chrome", bold black marker lines. */
@@ -103,6 +104,11 @@
     display:flex;align-items:center;gap:6px;
   }
   .back-btn svg{width:16px;height:16px;}
+
+  /* Feed toggle (Top Posts / Following) */
+  .feed-toggle{display:flex;gap:8px;margin:2px 0 12px;}
+  .ft{flex:1;text-align:center;border:2.5px solid var(--ink);border-radius:999px;padding:7px 0;font-family:var(--marker);font-size:16px;cursor:pointer;background:#fff;color:var(--ink);}
+  .ft.on{background:var(--red);color:#fff;}
 
   /* Media-type filter chips */
   .filters{display:flex;gap:8px;overflow-x:auto;padding-bottom:10px;margin-bottom:4px;}
@@ -252,7 +258,7 @@
       <div class="chrome-actions">
         <button class="icon-btn" aria-label="Search creators" onclick="toggleSearch()" id="searchBtn"></button>
         <button class="icon-btn" aria-label="New post" onclick="go('upload')" id="plusBtn"></button>
-        <button class="avatar-btn" aria-label="Your profile" onclick="openProfile('pete')" id="meBtn"></button>
+        <button class="avatar-btn" aria-label="Your profile" onclick="openMe()" id="meBtn"></button>
       </div>
       <div class="search-wrap" id="searchWrap" hidden>
         <input id="searchInput" placeholder="Search creators…" oninput="onSearch(this.value)" autocomplete="off" />
@@ -280,6 +286,7 @@
 <script>
 /* ============================================================
    Sketch-o-Media — the BEHAVIOR (what happens when you click)
+   Now backed by a real Supabase database!
    ============================================================ */
 
 /* ---------- little drawn icons (so it works offline) ---------- */
@@ -321,8 +328,8 @@ const ART = {
   smile2:`<svg viewBox="0 0 100 100" class="art-svg"><rect width="100" height="100" fill="#FFF6D6"/><circle cx="50" cy="50" r="30" fill="#FFD66B" stroke="#1c1c1c" stroke-width="3.2"/><circle cx="40" cy="46" r="3" fill="#1c1c1c"/><circle cx="60" cy="46" r="3" fill="#1c1c1c"/><path d="M36 58 q14 14 28 0" fill="none" stroke="#1c1c1c" stroke-width="3" stroke-linecap="round"/></svg>`,
 };
 
-/* ---------- artists ---------- */
-const CREATORS = {
+/* ---------- artists (used to SEED the database the first time) ---------- */
+const SEED_CREATORS = {
   pete:{name:"Stinky Pete", followers:447, desc:"I make daily art of how I feel.", ava:face({extra:`<path d="M40 48 v6 M60 48 v6" stroke="#1c1c1c" stroke-width="3" stroke-linecap="round"/><path d="M42 64 q8 5 16 0" fill="none" stroke="#1c1c1c" stroke-width="2.6" stroke-linecap="round"/><text x="64" y="34" font-family="Permanent Marker" font-size="13" fill="#E5394A">!</text>`})},
   riot:{name:"Riot Ruler", followers:47000, desc:"I'm a guy who makes INSANE ART.", ava:ART.evil},
   dragon:{name:"Doodle Dragon", followers:1200, desc:"I draw little monsters all day.", ava:ART.dragon},
@@ -331,21 +338,21 @@ const CREATORS = {
   misty:{name:"Misty Meadows", followers:2100, desc:"Calm watercolor worlds.", ava:face({extra:`<path d="M34 50 q5 4 10 0 M56 50 q5 4 10 0" fill="none" stroke="#1c1c1c" stroke-width="3" stroke-linecap="round"/><path d="M42 62 q8 4 16 0" fill="none" stroke="#1c1c1c" stroke-width="2.4" stroke-linecap="round"/>`})},
 };
 
-/* ---------- posts (hearts decide the ranking) ---------- */
-let POSTS = [
-  {id:1, by:"pete",   title:"I don't feel so good", media:"Pencil",     hearts:4200,  art:{type:'svg',svg:ART.sick}},
-  {id:2, by:"riot",   title:"Evil Artist",          media:"Marker",     hearts:38000, art:{type:'svg',svg:ART.evil}},
-  {id:3, by:"riot",   title:"I Am Broke",           media:"Pen",        hearts:21000, art:{type:'svg',svg:ART.broke}},
-  {id:4, by:"crayon", title:"Rainbow Day",          media:"Crayon",     hearts:3300,  art:{type:'svg',svg:ART.rainbow}},
-  {id:5, by:"misty",  title:"Quiet Hills",          media:"Watercolor", hearts:2600,  art:{type:'svg',svg:ART.hills}},
-  {id:6, by:"dragon", title:"Spike the Dragon",     media:"Pen",        hearts:1500,  art:{type:'svg',svg:ART.dragon}},
-  {id:7, by:"pete",   title:"So sleepy",            media:"Pencil",     hearts:1300,  art:{type:'svg',svg:ART.sleepy}},
-  {id:8, by:"pup",    title:"Good Boy",             media:"Pen",        hearts:1100,  art:{type:'svg',svg:ART.dog}},
-  {id:9, by:"pup",    title:"Clay Buddy",           media:"Clay",       hearts:980,   art:{type:'svg',svg:ART.clay}},
-  {id:10,by:"pete",   title:"Monday again",         media:"Charcoal",   hearts:920,   art:{type:'svg',svg:ART.grumpy}},
-  {id:11,by:"crayon", title:"Sunny Smile",          media:"Crayon",     hearts:760,   art:{type:'svg',svg:ART.smile2}},
-  {id:12,by:"pete",   title:"Happy today!",         media:"Marker",     hearts:640,   art:{type:'svg',svg:ART.happy}},
-  {id:13,by:"dragon", title:"Tiny Slime",           media:"Pencil",     hearts:540,   art:{type:'svg',svg:ART.slime}},
+/* ---------- posts (used to SEED the database the first time) ---------- */
+const SEED_POSTS = [
+  {by:"pete",   title:"I don't feel so good", media:"Pencil",     hearts:4200,  art:{type:'svg',svg:ART.sick}},
+  {by:"riot",   title:"Evil Artist",          media:"Marker",     hearts:38000, art:{type:'svg',svg:ART.evil}},
+  {by:"riot",   title:"I Am Broke",           media:"Pen",        hearts:21000, art:{type:'svg',svg:ART.broke}},
+  {by:"crayon", title:"Rainbow Day",          media:"Crayon",     hearts:3300,  art:{type:'svg',svg:ART.rainbow}},
+  {by:"misty",  title:"Quiet Hills",          media:"Watercolor", hearts:2600,  art:{type:'svg',svg:ART.hills}},
+  {by:"dragon", title:"Spike the Dragon",     media:"Pen",        hearts:1500,  art:{type:'svg',svg:ART.dragon}},
+  {by:"pete",   title:"So sleepy",            media:"Pencil",     hearts:1300,  art:{type:'svg',svg:ART.sleepy}},
+  {by:"pup",    title:"Good Boy",             media:"Pen",        hearts:1100,  art:{type:'svg',svg:ART.dog}},
+  {by:"pup",    title:"Clay Buddy",           media:"Clay",       hearts:980,   art:{type:'svg',svg:ART.clay}},
+  {by:"pete",   title:"Monday again",         media:"Charcoal",   hearts:920,   art:{type:'svg',svg:ART.grumpy}},
+  {by:"crayon", title:"Sunny Smile",          media:"Crayon",     hearts:760,   art:{type:'svg',svg:ART.smile2}},
+  {by:"pete",   title:"Happy today!",         media:"Marker",     hearts:640,   art:{type:'svg',svg:ART.happy}},
+  {by:"dragon", title:"Tiny Slime",           media:"Pencil",     hearts:540,   art:{type:'svg',svg:ART.slime}},
 ];
 
 const MEDIA_TYPES = ["All","Pencil","Pen","Marker","Charcoal","Watercolor","Crayon","Clay"];
@@ -354,16 +361,76 @@ const MEDIA_TYPES = ["All","Pencil","Pen","Marker","Charcoal","Watercolor","Cray
 const state = {
   screen:'feed',
   filter:'All',
-  following:new Set(['dragon']),
+  feedView:'top',
+  me:null,
+  following:new Set(),
   hearted:new Set(),
-  reacted:new Set(),
   postList:[], postIndex:0, infoRevealed:false,
-  profileId:'pete',
-  upload:{step:1, art:null, title:'', media:null},
+  profileId:null,
+  upload:{step:1, art:null, title:'', media:null, file:null},
   botVisited:false,
   botMessages:[],
-  newId:14,
 };
+
+/* ---------- connect to Supabase (the real database) ---------- */
+const SUPABASE_URL = "https://ihoyoyvpvrznsritibgd.supabase.co";
+const SUPABASE_KEY = "sb_publishable_TrCVnfiIrkm9PIGrGgrllQ_GjUQRg86";
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+/* runtime data, filled from the database */
+let CREATORS = {};
+let POSTS = [];
+
+async function init(){
+  showLoading();
+  try { await loadAll(); }
+  catch(e){ console.error(e); showError(); return; }
+  document.getElementById('meBtn').innerHTML = (state.me && CREATORS[state.me]) ? CREATORS[state.me].ava : SEED_CREATORS.pete.ava;
+  renderFeed();
+}
+async function ensureSeed(){
+  const { data: profs, error } = await sb.from('profiles').insert(
+    Object.entries(SEED_CREATORS).map(([username,c])=>({ username, display_name:c.name, description:c.desc, avatar_svg:c.ava, seed_followers:c.followers }))
+  ).select();
+  if(error || !profs) return;
+  const idByUser = {}; profs.forEach(p=>idByUser[p.username]=p.id);
+  await sb.from('posts').insert(
+    SEED_POSTS.map(p=>({ creator_id:idByUser[p.by], title:p.title, media_type:p.media, art_svg:p.art.svg, seed_hearts:p.hearts }))
+  );
+  if(idByUser['pete'] && idByUser['dragon']){
+    await sb.from('follows').insert({ follower_id:idByUser['pete'], following_id:idByUser['dragon'] });
+  }
+}
+async function loadAll(){
+  const head = await sb.from('posts').select('id',{count:'exact',head:true});
+  if(!head.count){ await ensureSeed(); }
+  const { data: profs } = await sb.from('profiles').select('*');
+  const { data: posts } = await sb.from('posts').select('*').order('created_at',{ascending:false});
+  CREATORS = {};
+  (profs||[]).forEach(p=>{ CREATORS[p.id] = { username:p.username, name:p.display_name, followers:p.seed_followers, desc:p.description, ava:p.avatar_svg }; });
+  const me = (profs||[]).find(p=>p.username==='pete') || (profs||[])[0];
+  state.me = me ? me.id : null;
+  POSTS = (posts||[]).map(p=>({ id:p.id, by:p.creator_id, title:p.title, media:p.media_type, hearts:p.seed_hearts, created_at:p.created_at, art: p.art_svg ? {type:'svg',svg:p.art_svg} : {type:'img',src:p.image_url} }));
+  state.hearted = new Set();
+  state.following = new Set();
+  if(state.me){
+    const { data: hs } = await sb.from('reactions').select('post_id').eq('user_id',state.me).eq('type','heart');
+    state.hearted = new Set((hs||[]).map(r=>r.post_id));
+    const { data: fs } = await sb.from('follows').select('following_id').eq('follower_id',state.me);
+    state.following = new Set((fs||[]).map(f=>f.following_id));
+  }
+}
+function showLoading(){ document.getElementById('screen-feed').innerHTML = `<div class="scroll" style="display:flex;align-items:center;justify-content:center;text-align:center;color:#7a756c"><div><div style="font-family:var(--marker);font-size:22px;color:var(--red);margin-bottom:8px">Sketch-o-Media</div>Loading the gallery…</div></div>`; }
+function showError(){ document.getElementById('screen-feed').innerHTML = `<div class="scroll" style="text-align:center;color:#7a756c"><p style="margin-top:50px;font-size:17px">Hmm — couldn't reach the database.<br>Check the internet and <span style="text-decoration:underline;cursor:pointer" onclick="init()">try again</span>.</p></div>`; }
+function openMe(){ if(state.me) openProfile(state.me); }
+function feedList(){
+  let list;
+  if(state.feedView==='following'){ list = POSTS.filter(p=>state.following.has(p.by)); }
+  else { list = topPosts(); }
+  if(state.filter!=='All') list = list.filter(p=>p.media===state.filter);
+  return list;
+}
+function setFeed(v){ state.feedView=v; renderFeed(); }
 
 /* ---------- tiny helpers ---------- */
 function fmt(n){ if(n>=1000){ let k=n/1000; return (k>=10?Math.round(k):(Math.round(k*10)/10)).toString().replace(/\.0$/,'')+'K'; } return ''+n; }
@@ -375,7 +442,7 @@ function toast(t){ const el=document.getElementById('toast'); el.textContent=t; 
 /* ---------- set up the fixed icons ---------- */
 document.getElementById('searchBtn').innerHTML = ICON.search;
 document.getElementById('plusBtn').innerHTML = ICON.plus;
-document.getElementById('meBtn').innerHTML = CREATORS.pete.ava;
+document.getElementById('meBtn').innerHTML = SEED_CREATORS.pete.ava;
 document.getElementById('botFab').innerHTML = BUNNY;
 
 /* ---------- screen switching ---------- */
@@ -390,56 +457,65 @@ function go(name){
   closePost();
   activate(name);
   if(name==='feed') renderFeed();
-  if(name==='upload'){ state.upload={step:1,art:null,title:'',media:null}; renderUpload(); }
+  if(name==='upload'){ state.upload={step:1,art:null,title:'',media:null,file:null}; renderUpload(); }
   if(name==='bot') renderBot();
 }
 
 /* ================= FEED ================= */
 function renderFeed(){
-  const list = topPosts().filter(p=> state.filter==='All' || p.media===state.filter);
+  const list = feedList();
+  const toggle = `<div class="feed-toggle">
+      <div class="ft ${state.feedView==='top'?'on':''}" onclick="setFeed('top')">Top Posts</div>
+      <div class="ft ${state.feedView==='following'?'on':''}" onclick="setFeed('following')">Following</div>
+    </div>`;
   const filters = MEDIA_TYPES.map(m=>`<div class="chip ${m===state.filter?'on':''}" onclick="setFilter('${m}')">${m}</div>`).join('');
-  const cards2 = list.map((p,i)=>{
-    const c=CREATORS[p.by];
-    return `<div class="card" onclick="openPost('feed',${p.id})">
-      <div class="art-box"><span class="rank">${i+1}</span>${artHTML(p.art)}</div>
+  const cards = list.map((p,i)=>{
+    const c=CREATORS[p.by]||{name:'…'};
+    const rank = state.feedView==='top' ? `<span class="rank">${i+1}</span>` : '';
+    return `<div class="card" onclick="openPost('feed','${p.id}')">
+      <div class="art-box">${rank}${artHTML(p.art)}</div>
       <div class="c-title">${p.title}</div>
       <div class="c-meta">${c.name}</div>
-      <div class="c-react"><span>🙂</span><span>👍</span><span class="react-num" style="display:flex;align-items:center;gap:3px;color:#E5394A">❤️ ${fmt(heartsOf(p))}</span></div>
+      <div class="c-react"><span>🙂</span><span>👍</span><span class="react-num" style="color:#E5394A">❤️ ${fmt(heartsOf(p))}</span></div>
     </div>`;
   }).join('');
+  let empty='';
+  if(list.length===0){
+    empty = state.feedView==='following'
+      ? '<p style="color:#7a756c;text-align:center;margin-top:30px">Follow some artists and their newest art shows up here! Tap an artist, then hit Follow.</p>'
+      : '<p style="color:#7a756c;text-align:center;margin-top:30px">No art in this style yet. Try another!</p>';
+  }
   document.getElementById('screen-feed').innerHTML = `
     <div class="scroll">
-      <div class="screen-title">Top Posts</div>
+      ${toggle}
       <div class="filters">${filters}</div>
-      <div class="grid">${cards2}</div>
-      ${list.length===0?'<p style="color:#7a756c;text-align:center;margin-top:30px">No art in this style yet. Try another!</p>':''}
+      <div class="grid">${cards}</div>
+      ${empty}
     </div>`;
 }
 function setFilter(m){ state.filter=m; renderFeed(); }
 
 /* ================= POST DETAIL ================= */
-function listFor(kind, id){
-  let arr;
-  if(kind.startsWith('profile:')){ const cid=kind.split(':')[1]; arr=POSTS.filter(p=>p.by===cid); }
-  else arr = topPosts().filter(p=> state.filter==='All'||p.media===state.filter);
-  return arr;
+function listFor(kind){
+  if(kind.startsWith('profile:')){ const cid=kind.slice('profile:'.length); return POSTS.filter(p=>p.by===cid).sort((a,b)=>heartsOf(b)-heartsOf(a)); }
+  return feedList();
 }
 function openPost(kind, id){
   state.postKind = kind;
-  state.postList = listFor(kind, id);
+  state.postList = listFor(kind);
   state.postIndex = Math.max(0, state.postList.findIndex(p=>p.id===id));
   state.infoRevealed = false;
   document.getElementById('botFab').style.display='none';
-  const ov=document.getElementById('postOverlay'); ov.classList.add('open');
+  document.getElementById('postOverlay').classList.add('open');
   renderPost();
 }
 function closePost(){
-  const ov=document.getElementById('postOverlay'); ov.classList.remove('open');
+  document.getElementById('postOverlay').classList.remove('open');
   if(state.screen!=='bot') document.getElementById('botFab').style.display='flex';
 }
 function renderPost(){
   const p=state.postList[state.postIndex]; if(!p) return;
-  const c=CREATORS[p.by];
+  const c=CREATORS[p.by]||{name:'…',ava:''};
   const following = state.following.has(p.by);
   const hearted = state.hearted.has(p.id);
   const info = state.infoRevealed ? `
@@ -449,12 +525,12 @@ function renderPost(){
         <div class="creator-chip" onclick="openProfile('${p.by}')">
           <div class="ava">${c.ava}</div><span>${c.name}</span>
         </div>
-        ${ p.by!=='pete' && !following ? `<span class="pill red" onclick="event.stopPropagation();toggleFollow('${p.by}')">+ Follow</span>`:''}
+        ${ p.by!==state.me && !following ? `<span class="pill red" onclick="event.stopPropagation();toggleFollow('${p.by}')">+ Follow</span>`:''}
         <span class="media-chip">${p.media}</span>
         <span class="pi-react">
-          <button class="emoji-btn" title="Smile" onclick="event.stopPropagation();bump('🙂')">🙂</button>
-          <button class="emoji-btn" title="Thumbs up" onclick="event.stopPropagation();bump('👍')">👍</button>
-          <button class="heart-btn" onclick="event.stopPropagation();toggleHeart(${p.id})">${hearted?ICON.heartFull:ICON.heart}<span class="num" style="color:#E5394A">${fmt(heartsOf(p))}</span></button>
+          <button class="emoji-btn" title="Smile" onclick="event.stopPropagation();bump('smiley')">🙂</button>
+          <button class="emoji-btn" title="Thumbs up" onclick="event.stopPropagation();bump('thumbs')">👍</button>
+          <button class="heart-btn" onclick="event.stopPropagation();toggleHeart('${p.id}')">${hearted?ICON.heartFull:ICON.heart}<span class="num" style="color:#E5394A">${fmt(heartsOf(p))}</span></button>
         </span>
       </div>
     </div>` : '';
@@ -473,26 +549,40 @@ function renderPost(){
 function toggleInfo(){ state.infoRevealed=!state.infoRevealed; renderPost(); }
 function nextPost(){ state.postIndex=(state.postIndex+1)%state.postList.length; state.infoRevealed=false; renderPost(); }
 function prevPost(){ state.postIndex=(state.postIndex-1+state.postList.length)%state.postList.length; state.infoRevealed=false; renderPost(); }
-function toggleHeart(id){ if(state.hearted.has(id)) state.hearted.delete(id); else state.hearted.add(id); renderPost(); }
-function bump(e){ toast(e+'  reaction sent!'); }
+async function toggleHeart(id){
+  if(!state.me) return;
+  const had = state.hearted.has(id);
+  if(had) state.hearted.delete(id); else state.hearted.add(id);
+  renderPost();
+  try{
+    if(had) await sb.from('reactions').delete().match({post_id:id,user_id:state.me,type:'heart'});
+    else await sb.from('reactions').insert({post_id:id,user_id:state.me,type:'heart'});
+  }catch(e){ if(had) state.hearted.add(id); else state.hearted.delete(id); renderPost(); toast('Could not save — try again'); }
+}
+async function bump(type){
+  const p=state.postList[state.postIndex]; if(!p||!state.me) return;
+  toast((type==='smiley'?'🙂':'👍')+' reaction saved!');
+  try{ await sb.from('reactions').insert({post_id:p.id,user_id:state.me,type}); }catch(e){}
+}
 
 /* ================= PROFILE ================= */
 function openProfile(id){
   closePost();
-  state.profileId=id;
   activate('profile');
   renderProfile(id);
 }
 function renderProfile(id){
-  const c=CREATORS[id];
-  const mine = id==='pete';
+  const c=CREATORS[id]; if(!c) return;
+  state.profileId=id;
+  const mine = id===state.me;
   const following = state.following.has(id);
+  const fc = (c.followers||0) + (following?1:0);
   const posts = POSTS.filter(p=>p.by===id).sort((a,b)=>heartsOf(b)-heartsOf(a));
   const btn = mine
     ? `<button class="btn" onclick="toast('Editing your profile — coming soon!')">Edit</button>`
-    : `<button class="btn ${following?'following':'follow'}" onclick="toggleFollow('${id}');renderProfile('${id}')">${following?'Following ✓':'Follow'}</button>`;
+    : `<button class="btn ${following?'following':'follow'}" onclick="toggleFollow('${id}')">${following?'Following ✓':'Follow'}</button>`;
   const grid = posts.map(p=>`
-    <div class="card" onclick="openPost('profile:${id}',${p.id})">
+    <div class="card" onclick="openPost('profile:${id}','${p.id}')">
       <div class="art-box">${artHTML(p.art)}</div>
       <div class="c-react" style="justify-content:center"><span style="color:#E5394A">❤️ ${fmt(heartsOf(p))}</span></div>
     </div>`).join('');
@@ -503,7 +593,7 @@ function renderProfile(id){
         <div class="p-ava">${c.ava}</div>
         <div style="flex:1">
           <div class="p-name">${c.name}</div>
-          <div class="p-followers">${fmt(c.followers)||c.followers} followers</div>
+          <div class="p-followers">${fmt(fc)||fc} followers</div>
           ${btn}
         </div>
       </div>
@@ -512,10 +602,18 @@ function renderProfile(id){
       <div class="grid">${grid}</div>
     </div>`;
 }
-function toggleFollow(id){
-  if(state.following.has(id)){ state.following.delete(id); toast('Unfollowed '+CREATORS[id].name); }
-  else { state.following.add(id); toast('Now following '+CREATORS[id].name+'! 🎉'); }
+async function toggleFollow(id){
+  if(!state.me) return;
+  const had=state.following.has(id);
+  if(had){ state.following.delete(id); toast('Unfollowed '+(CREATORS[id]?CREATORS[id].name:'')); }
+  else { state.following.add(id); toast('Now following '+(CREATORS[id]?CREATORS[id].name:'')+'! 🎉'); }
   if(document.getElementById('postOverlay').classList.contains('open')) renderPost();
+  if(state.screen==='profile') renderProfile(state.profileId);
+  if(state.screen==='feed' && state.feedView==='following') renderFeed();
+  try{
+    if(had) await sb.from('follows').delete().match({follower_id:state.me,following_id:id});
+    else await sb.from('follows').insert({follower_id:state.me,following_id:id});
+  }catch(e){ if(had) state.following.add(id); else state.following.delete(id); toast('Could not save'); }
 }
 
 /* ================= SEARCH ================= */
@@ -579,11 +677,11 @@ function renderUpload(){
       <div class="up-nav">${back}${next}</div>
     </div>`;
 }
-function pickArt(k){ state.upload.art={type:'svg',svg:ART[k],key:k}; renderUpload(); }
+function pickArt(k){ state.upload.art={type:'svg',svg:ART[k],key:k}; state.upload.file=null; renderUpload(); }
 function uploadPhoto(ev){
   const f=ev.target.files[0]; if(!f) return;
   const r=new FileReader();
-  r.onload=()=>{ state.upload.art={type:'img',src:r.result,key:'photo'}; renderUpload(); };
+  r.onload=()=>{ state.upload.art={type:'img',src:r.result,key:'photo'}; state.upload.file=f; renderUpload(); };
   r.readAsDataURL(f);
 }
 function upStep(d){
@@ -596,14 +694,30 @@ function upStep(d){
   u.step=Math.min(4,Math.max(1,u.step+d));
   renderUpload();
 }
-function finishUpload(){
+async function finishUpload(){
   const u=state.upload;
-  const post={id:state.newId++, by:'pete', title:u.title.trim()||'Untitled', media:u.media||'Pencil', hearts:0, art:u.art};
-  POSTS.push(post);
-  toast('Posted! 🎉 Your art is live.');
-  openPost('profile:pete', post.id);
-  // also make sure profile is the screen behind the overlay
-  activateBehind('profile'); renderProfile('pete');
+  if(!state.me){ toast('Still loading — one sec…'); return; }
+  toast('Posting…');
+  let art_svg=null, image_url=null;
+  try{
+    if(u.art.type==='img' && u.file){
+      const safe=(u.file.name||'drawing').replace(/[^a-zA-Z0-9._-]/g,'_');
+      const path='u/'+Date.now()+'-'+safe;
+      const up=await sb.storage.from('drawings').upload(path,u.file);
+      if(up.error) throw up.error;
+      image_url=sb.storage.from('drawings').getPublicUrl(path).data.publicUrl;
+    } else {
+      art_svg=u.art.svg;
+    }
+    const ins=await sb.from('posts').insert({creator_id:state.me,title:u.title.trim()||'Untitled',media_type:u.media||'Pencil',art_svg,image_url,seed_hearts:0}).select().single();
+    if(ins.error) throw ins.error;
+    const d=ins.data;
+    const post={id:d.id, by:d.creator_id, title:d.title, media:d.media_type, hearts:0, created_at:d.created_at, art: art_svg?{type:'svg',svg:art_svg}:{type:'img',src:image_url}};
+    POSTS.unshift(post);
+    toast('Posted! 🎉 Your art is saved.');
+    openPost('profile:'+state.me, post.id);
+    activateBehind('profile'); renderProfile(state.me);
+  }catch(e){ console.error(e); toast('Upload failed — try again'); }
 }
 function activateBehind(name){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); const el=document.getElementById('screen-'+name); if(el) el.classList.add('active'); state.screen=name; }
 
@@ -661,7 +775,6 @@ function botSend(preset){
   const text = preset!==undefined? preset : (input? input.value.trim():'');
   if(!text) return;
   if(input) input.value='';
-  // clear the suggest flag on old welcome
   state.botMessages.forEach(m=>m.suggest=false);
   state.botMessages.push({who:'me', text});
   drawThread();
@@ -699,8 +812,8 @@ ovEl.addEventListener('touchend',e=>{
   touchY=null;
 });
 
-/* ---------- start the app ---------- */
-renderFeed();
+/* ---------- start the app (loads from the database) ---------- */
+init();
 </script>
 </body>
 </html>
