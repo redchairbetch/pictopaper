@@ -50,7 +50,6 @@
   .feed-toggle{display:flex;gap:8px;margin:2px 0 12px;}
   .ft{flex:1;text-align:center;border:2.5px solid var(--ink);border-radius:999px;padding:7px 0;font-family:var(--marker);font-size:16px;cursor:pointer;background:#fff;color:var(--ink);}
   .ft.on{background:var(--red);color:#fff;}
-  /* Auth (login / signup) */
   .auth-scroll{display:flex;align-items:flex-start;justify-content:center;}
   .auth-card{width:100%;max-width:320px;margin-top:14px;display:flex;flex-direction:column;gap:10px;}
   .auth-logo{font-family:var(--marker);font-size:26px;color:var(--red);text-align:center;margin-bottom:2px;}
@@ -62,6 +61,10 @@
   .auth-lbl{font-size:14px;color:var(--muted);margin:2px 2px -4px;}
   .auth-go{margin-top:4px;}
   .auth-skip{text-align:center;color:var(--muted);font-size:15px;text-decoration:underline;cursor:pointer;margin-top:4px;}
+  .ava-pick{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:6px;}
+  .apick{width:54px;height:54px;border:2.5px solid var(--ink);border-radius:50%;overflow:hidden;cursor:pointer;background:#fff;}
+  .apick.sel{outline:4px solid var(--green);}
+  .apick svg{width:100%;height:100%;}
   .filters{display:flex;gap:8px;overflow-x:auto;padding-bottom:10px;margin-bottom:4px;}
   .filters::-webkit-scrollbar{height:0;}
   .chip{flex-shrink:0;border:2px solid var(--ink);border-radius:999px;padding:5px 13px;font-size:15px;background:#fff;cursor:pointer;white-space:nowrap;color:var(--ink);}
@@ -80,6 +83,7 @@
   .p-ava svg{width:100%;height:100%;}
   .p-name{font-family:var(--marker);font-size:22px;line-height:1.1;}
   .p-followers{font-size:16px;color:var(--muted);margin:2px 0 8px;}
+  .p-btns{display:flex;gap:8px;flex-wrap:wrap;}
   .btn{border:2px solid var(--ink);border-radius:10px;background:#fff;color:var(--ink);font-family:var(--hand);font-size:16px;padding:6px 16px;cursor:pointer;}
   .btn.follow{background:var(--red);color:#fff;}
   .btn.following{background:#fff;color:var(--ink);}
@@ -105,6 +109,8 @@
   .pill{border:2px solid var(--ink);border-radius:999px;padding:3px 11px;font-size:14px;background:#fff;cursor:pointer;}
   .pill.red{background:var(--red);color:#fff;}
   .media-chip{border:2px solid var(--ink);border-radius:8px;padding:3px 10px;font-size:14px;background:var(--paper2);}
+  .del-btn{background:#fff;border:2px solid #c0392b;color:#c0392b;border-radius:8px;height:30px;display:flex;align-items:center;justify-content:center;gap:4px;cursor:pointer;padding:0 9px;font-family:var(--hand);font-size:14px;}
+  .del-btn svg{width:16px;height:16px;}
   .pi-react{margin-left:auto;display:flex;align-items:center;gap:10px;font-size:18px;}
   .pi-react .num{font-size:15px;}
   .emoji-btn{cursor:pointer;background:none;border:none;font-size:20px;padding:0;line-height:1;}
@@ -150,7 +156,10 @@
   .composer input{flex:1;font-family:var(--hand);font-size:17px;border:2.5px solid var(--ink);border-radius:999px;padding:9px 16px;outline:none;}
   .bot-fab{position:absolute;right:14px;bottom:16px;z-index:50;width:60px;height:60px;border-radius:50%;background:#fff;border:3px solid var(--ink);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:6px;}
   .bot-fab svg{width:100%;height:100%;}
-  .toast{position:absolute;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:8px 16px;border-radius:999px;font-size:15px;z-index:90;opacity:0;transition:opacity .2s;pointer-events:none;}
+  .post-fab{position:absolute;left:50%;transform:translateX(-50%);bottom:16px;z-index:50;width:62px;height:62px;border-radius:50%;background:var(--red);border:3px solid var(--ink);cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;}
+  .post-fab svg{width:28px;height:28px;}
+  .post-fab:active{transform:translateX(-50%) translateY(1px);}
+  .toast{position:absolute;left:50%;bottom:88px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:8px 16px;border-radius:999px;font-size:15px;z-index:90;opacity:0;transition:opacity .2s;pointer-events:none;max-width:88%;text-align:center;}
   .toast.show{opacity:1;}
 </style>
 </head>
@@ -162,7 +171,6 @@
       <div class="logo" onclick="go('feed')">Sketch-o-Media</div>
       <div class="chrome-actions">
         <button class="icon-btn" aria-label="Search creators" onclick="toggleSearch()" id="searchBtn"></button>
-        <button class="icon-btn" aria-label="New post" onclick="go('upload')" id="plusBtn"></button>
         <button class="avatar-btn" aria-label="Log in" onclick="onAvatarClick()" id="meBtn"></button>
       </div>
       <div class="search-wrap" id="searchWrap" hidden>
@@ -174,24 +182,26 @@
     <div class="screens">
       <section class="screen active" id="screen-feed"></section>
       <section class="screen" id="screen-profile"></section>
+      <section class="screen" id="screen-editprofile"></section>
       <section class="screen" id="screen-upload"></section>
       <section class="screen" id="screen-bot"></section>
       <section class="screen" id="screen-auth"></section>
     </div>
 
     <div class="post-overlay" id="postOverlay"></div>
+    <button class="post-fab" id="postFab" aria-label="New post" onclick="go('upload')"></button>
     <button class="bot-fab" id="botFab" aria-label="Open Sketch o' Bot" onclick="go('bot')"></button>
     <div class="toast" id="toast"></div>
   </div>
 
 <script>
 /* ============================================================
-   Sketch-o-Media — backed by a real Supabase database + accounts
+   Sketch-o-Media — Supabase database + accounts
    ============================================================ */
 
 const ICON = {
   search:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>`,
-  plus:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`,
+  plus:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`,
   x:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>`,
   up:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 15 12 9 18 15"/></svg>`,
   down:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>`,
@@ -201,6 +211,7 @@ const ICON = {
   heart:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M12 20s-7-4.6-7-9.4A3.6 3.6 0 0 1 12 8a3.6 3.6 0 0 1 7 2.6C19 15.4 12 20 12 20z"/></svg>`,
   heartFull:`<svg viewBox="0 0 24 24" fill="#E5394A" stroke="#1c1c1c" stroke-width="2.2" stroke-linejoin="round"><path d="M12 20s-7-4.6-7-9.4A3.6 3.6 0 0 1 12 8a3.6 3.6 0 0 1 7 2.6C19 15.4 12 20 12 20z"/></svg>`,
   user:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.6"/><path d="M5 20c0-3.6 3.1-6 7-6s7 2.4 7 6"/></svg>`,
+  trash:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V3h6v3"/></svg>`,
 };
 
 const BUNNY = `<svg viewBox="0 0 64 80"><g fill="#9CC23F" stroke="#1c1c1c" stroke-width="3.2" stroke-linejoin="round"><rect x="20" y="6" width="9" height="34" rx="4.5" transform="rotate(-6 24.5 23)"/><rect x="35" y="6" width="9" height="34" rx="4.5" transform="rotate(6 39.5 23)"/><rect x="10" y="30" width="44" height="42" rx="13"/></g><g stroke="#1c1c1c" stroke-width="3" stroke-linecap="round" fill="none"><line x1="25" y1="46" x2="25" y2="54"/><line x1="39" y1="46" x2="39" y2="54"/><path d="M32 56 L32 62 M32 62 L28.5 66 M32 62 L35.5 66"/></g><rect x="29" y="48" width="6" height="6" rx="1.2" fill="none" stroke="#1c1c1c" stroke-width="2.4"/></svg>`;
@@ -227,12 +238,13 @@ const ART = {
   smile2:`<svg viewBox="0 0 100 100" class="art-svg"><rect width="100" height="100" fill="#FFF6D6"/><circle cx="50" cy="50" r="30" fill="#FFD66B" stroke="#1c1c1c" stroke-width="3.2"/><circle cx="40" cy="46" r="3" fill="#1c1c1c"/><circle cx="60" cy="46" r="3" fill="#1c1c1c"/><path d="M36 58 q14 14 28 0" fill="none" stroke="#1c1c1c" stroke-width="3" stroke-linecap="round"/></svg>`,
 };
 
+const AVATAR_CHOICES = [DEFAULT_AVATAR, ART.happy, ART.grumpy, ART.sleepy, ART.smile2, ART.dragon];
 const MEDIA_TYPES = ["All","Pencil","Pen","Marker","Charcoal","Watercolor","Crayon","Clay"];
 
 /* ---------- app memory (state) ---------- */
 const state = {
   screen:'feed', filter:'All', feedView:'top',
-  me:null, authMode:'login', authMsg:'',
+  me:null, authMode:'login', authMsg:'', editAvatar:null,
   following:new Set(), hearted:new Set(),
   postList:[], postIndex:0, infoRevealed:false,
   profileId:null,
@@ -248,6 +260,8 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 let CREATORS = {};
 let POSTS = [];
 
+function esc(s){ return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
 async function init(){
   showLoading();
   try {
@@ -256,6 +270,7 @@ async function init(){
   } catch(e){ console.error(e); showError(); return; }
   updateChrome();
   renderFeed();
+  updateFabs();
 }
 async function loadAll(session){
   state.me = (session && session.user) ? session.user.id : null;
@@ -274,6 +289,14 @@ async function loadAll(session){
 }
 function showLoading(){ document.getElementById('screen-feed').innerHTML = `<div class="scroll" style="display:flex;align-items:center;justify-content:center;text-align:center;color:#7a756c"><div><div style="font-family:var(--marker);font-size:22px;color:var(--red);margin-bottom:8px">Sketch-o-Media</div>Loading the gallery…</div></div>`; }
 function showError(){ document.getElementById('screen-feed').innerHTML = `<div class="scroll" style="text-align:center;color:#7a756c"><p style="margin-top:50px;font-size:17px">Hmm — couldn't reach the database.<br>Check the internet and <span style="text-decoration:underline;cursor:pointer" onclick="init()">try again</span>.</p></div>`; }
+
+/* ---------- floating buttons ---------- */
+function updateFabs(){
+  const overlay = document.getElementById('postOverlay').classList.contains('open');
+  const s = state.screen;
+  document.getElementById('botFab').style.display = (!overlay && s!=='bot' && s!=='auth') ? 'flex':'none';
+  document.getElementById('postFab').style.display = (!overlay && (s==='feed'||s==='profile')) ? 'flex':'none';
+}
 
 /* ---------- accounts ---------- */
 function updateChrome(){
@@ -307,7 +330,7 @@ function renderAuth(){
           <div class="at ${login?'on':''}" onclick="showAuth('login')">Log in</div>
           <div class="at ${!login?'on':''}" onclick="showAuth('signup')">Sign up</div>
         </div>
-        ${state.authMsg?`<div class="auth-msg">${state.authMsg}</div>`:''}
+        ${state.authMsg?`<div class="auth-msg">${esc(state.authMsg)}</div>`:''}
         <div id="authError" class="auth-err"></div>
         ${login ? `
           <input class="up-input" id="auEmail" type="email" placeholder="Email" autocomplete="username">
@@ -351,15 +374,54 @@ async function doSignup(){
 async function afterAuth(session){
   showLoading(); activate('feed');
   await loadAll(session);
-  updateChrome(); renderFeed();
+  updateChrome(); renderFeed(); updateFabs();
   toast('Welcome to Sketch-o-Media! 🎉');
 }
 async function doLogout(){
   await sb.auth.signOut();
   showLoading(); activate('feed');
   await loadAll(null);
-  updateChrome(); renderFeed();
+  updateChrome(); renderFeed(); updateFabs();
   toast('Logged out.');
+}
+
+/* ---------- edit profile ---------- */
+function backToMyProfile(){ if(state.me) openProfile(state.me); else go('feed'); }
+function pickAvatar(i){ state.editAvatar=AVATAR_CHOICES[i]; renderEditProfile(); }
+function openEditProfile(){
+  if(!state.me) return;
+  const c=CREATORS[state.me]||{};
+  state.editAvatar = c.ava || DEFAULT_AVATAR;
+  activate('editprofile');
+  renderEditProfile();
+}
+function renderEditProfile(){
+  const c=CREATORS[state.me]||{};
+  const picks = AVATAR_CHOICES.map((a,i)=>`<div class="apick ${state.editAvatar===a?'sel':''}" onclick="pickAvatar(${i})">${a}</div>`).join('');
+  document.getElementById('screen-editprofile').innerHTML = `
+    <div class="scroll">
+      <div class="back-row"><button class="back-btn" onclick="backToMyProfile()">${ICON.back} Back</button></div>
+      <div class="up-h">Edit your profile</div>
+      <label class="auth-lbl" style="text-align:center;display:block;margin-bottom:6px">Pick an avatar</label>
+      <div class="ava-pick">${picks}</div>
+      <label class="auth-lbl">Artist name</label>
+      <input class="up-input" id="epName" value="${esc(c.name)}" maxlength="24">
+      <label class="auth-lbl" style="margin-top:8px">About you</label>
+      <textarea class="up-input" id="epDesc" rows="3" maxlength="140" style="resize:none">${esc(c.desc)}</textarea>
+      <button class="btn green" style="margin-top:14px" onclick="saveProfile()">Save changes</button>
+    </div>`;
+}
+async function saveProfile(){
+  const name=val('epName');
+  const desc=(document.getElementById('epDesc')||{}).value||'';
+  if(!name) return toast('Add an artist name.');
+  toast('Saving…');
+  const { error } = await sb.from('profiles').update({ display_name:name, description:desc.trim(), avatar_svg:state.editAvatar }).eq('id', state.me);
+  if(error){ console.error(error); toast('Could not save — try again'); return; }
+  const c=CREATORS[state.me]; if(c){ c.name=name; c.desc=desc.trim(); c.ava=state.editAvatar; }
+  updateChrome();
+  openProfile(state.me);
+  toast('Profile saved! 🎉');
 }
 
 /* ---------- tiny helpers ---------- */
@@ -373,10 +435,10 @@ function feedList(){
   return list;
 }
 function setFeed(v){ state.feedView=v; renderFeed(); }
-function toast(t){ const el=document.getElementById('toast'); el.textContent=t; el.classList.add('show'); clearTimeout(el._t); el._t=setTimeout(()=>el.classList.remove('show'),1600); }
+function toast(t){ const el=document.getElementById('toast'); el.textContent=t; el.classList.add('show'); clearTimeout(el._t); el._t=setTimeout(()=>el.classList.remove('show'),1700); }
 
 document.getElementById('searchBtn').innerHTML = ICON.search;
-document.getElementById('plusBtn').innerHTML = ICON.plus;
+document.getElementById('postFab').innerHTML = ICON.plus;
 document.getElementById('meBtn').innerHTML = ICON.user;
 document.getElementById('botFab').innerHTML = BUNNY;
 
@@ -385,7 +447,7 @@ function activate(name){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   const el=document.getElementById('screen-'+name); if(el) el.classList.add('active');
   state.screen=name;
-  document.getElementById('botFab').style.display=(name==='bot'||name==='auth')?'none':'flex';
+  updateFabs();
   hideSearch();
 }
 function go(name){
@@ -410,8 +472,8 @@ function renderFeed(){
     const rank = state.feedView==='top' ? `<span class="rank">${i+1}</span>` : '';
     return `<div class="card" onclick="openPost('feed','${p.id}')">
       <div class="art-box">${rank}${artHTML(p.art)}</div>
-      <div class="c-title">${p.title}</div>
-      <div class="c-meta">${c.name}</div>
+      <div class="c-title">${esc(p.title)}</div>
+      <div class="c-meta">${esc(c.name)}</div>
       <div class="c-react"><span>🙂</span><span>👍</span><span class="react-num" style="color:#E5394A">❤️ ${fmt(heartsOf(p))}</span></div>
     </div>`;
   }).join('');
@@ -427,6 +489,7 @@ function renderFeed(){
       <div class="filters">${filters}</div>
       <div class="grid">${cards}</div>
       ${empty}
+      <div style="height:74px"></div>
     </div>`;
 }
 function setFilter(m){ state.filter=m; renderFeed(); }
@@ -441,28 +504,30 @@ function openPost(kind, id){
   state.postList = listFor(kind);
   state.postIndex = Math.max(0, state.postList.findIndex(p=>p.id===id));
   state.infoRevealed = false;
-  document.getElementById('botFab').style.display='none';
   document.getElementById('postOverlay').classList.add('open');
+  updateFabs();
   renderPost();
 }
 function closePost(){
   document.getElementById('postOverlay').classList.remove('open');
-  if(state.screen!=='bot' && state.screen!=='auth') document.getElementById('botFab').style.display='flex';
+  updateFabs();
 }
 function renderPost(){
   const p=state.postList[state.postIndex]; if(!p) return;
   const c=CREATORS[p.by]||{name:'…',ava:''};
   const following = state.following.has(p.by);
   const hearted = state.hearted.has(p.id);
+  const mine = p.by===state.me;
   const info = state.infoRevealed ? `
     <div class="post-info">
-      <div class="pi-title">${p.title}</div>
+      <div class="pi-title">${esc(p.title)}</div>
       <div class="pi-row">
         <div class="creator-chip" onclick="openProfile('${p.by}')">
-          <div class="ava">${c.ava}</div><span>${c.name}</span>
+          <div class="ava">${c.ava}</div><span>${esc(c.name)}</span>
         </div>
-        ${ p.by!==state.me && !following ? `<span class="pill red" onclick="event.stopPropagation();toggleFollow('${p.by}')">+ Follow</span>`:''}
-        <span class="media-chip">${p.media}</span>
+        ${ !mine && !following ? `<span class="pill red" onclick="event.stopPropagation();toggleFollow('${p.by}')">+ Follow</span>`:''}
+        <span class="media-chip">${esc(p.media)}</span>
+        ${ mine ? `<button class="del-btn" onclick="event.stopPropagation();deletePost('${p.id}')">${ICON.trash} Delete</button>`:''}
         <span class="pi-react">
           <button class="emoji-btn" title="Smile" onclick="event.stopPropagation();bump('smiley')">🙂</button>
           <button class="emoji-btn" title="Thumbs up" onclick="event.stopPropagation();bump('thumbs')">👍</button>
@@ -501,6 +566,15 @@ async function bump(type){
   toast((type==='smiley'?'🙂':'👍')+' reaction saved!');
   try{ await sb.from('reactions').insert({post_id:p.id,user_id:state.me,type}); }catch(e){}
 }
+async function deletePost(id){
+  if(!window.confirm('Delete this post? This can\'t be undone.')) return;
+  const { error } = await sb.from('posts').delete().eq('id', id);
+  if(error){ console.error(error); toast('Could not delete — try again'); return; }
+  POSTS = POSTS.filter(p=>p.id!==id);
+  toast('Post deleted.');
+  closePost();
+  if(state.screen==='profile') renderProfile(state.profileId); else renderFeed();
+}
 
 /* ================= PROFILE ================= */
 function openProfile(id){
@@ -515,28 +589,29 @@ function renderProfile(id){
   const following = state.following.has(id);
   const fc = (c.followers||0) + (following?1:0);
   const posts = POSTS.filter(p=>p.by===id).sort((a,b)=>heartsOf(b)-heartsOf(a));
-  const btn = mine
-    ? `<button class="btn" onclick="toast('Editing your profile — coming soon!')">Edit</button> <button class="btn" onclick="doLogout()">Log out</button>`
+  const btns = mine
+    ? `<button class="btn" onclick="openEditProfile()">Edit profile</button><button class="btn" onclick="doLogout()">Log out</button>`
     : `<button class="btn ${following?'following':'follow'}" onclick="toggleFollow('${id}')">${following?'Following ✓':'Follow'}</button>`;
   const grid = posts.length ? posts.map(p=>`
     <div class="card" onclick="openPost('profile:${id}','${p.id}')">
       <div class="art-box">${artHTML(p.art)}</div>
       <div class="c-react" style="justify-content:center"><span style="color:#E5394A">❤️ ${fmt(heartsOf(p))}</span></div>
-    </div>`).join('') : `<p style="color:#7a756c;grid-column:1/3;text-align:center;margin-top:10px">${mine?'No art yet — tap + to post your first drawing!':'No posts yet.'}</p>`;
+    </div>`).join('') : `<p style="color:#7a756c;grid-column:1/3;text-align:center;margin-top:10px">${mine?'No art yet — tap the + to post your first drawing!':'No posts yet.'}</p>`;
   document.getElementById('screen-profile').innerHTML = `
     <div class="scroll">
       <div class="back-row"><button class="back-btn" onclick="go('feed')">${ICON.back} Home</button></div>
       <div class="p-head">
         <div class="p-ava">${c.ava}</div>
         <div style="flex:1">
-          <div class="p-name">${c.name}</div>
+          <div class="p-name">${esc(c.name)}</div>
           <div class="p-followers">${fmt(fc)||fc} followers</div>
-          ${btn}
+          <div class="p-btns">${btns}</div>
         </div>
       </div>
-      <div class="p-desc">Description: ${c.desc}</div>
+      <div class="p-desc">Description: ${esc(c.desc)}</div>
       <div class="p-posts-label">Posts</div>
       <div class="grid">${grid}</div>
+      <div style="height:74px"></div>
     </div>`;
 }
 async function toggleFollow(id){
@@ -566,7 +641,7 @@ function onSearch(q){
   const html = ids.length? ids.map(id=>{
     const c=CREATORS[id];
     return `<div class="search-row" onclick="openProfile('${id}')">
-      <div class="ava">${c.ava}</div><div class="nm">${c.name}</div><div class="fc">${fmt(c.followers)||c.followers}</div>
+      <div class="ava">${c.ava}</div><div class="nm">${esc(c.name)}</div><div class="fc">${fmt(c.followers)||c.followers}</div>
     </div>`;
   }).join('') : `<div class="search-empty">No creators found.</div>`;
   document.getElementById('searchResults').innerHTML=html;
@@ -586,7 +661,7 @@ function renderUpload(){
   } else if(u.step===2){
     body=`<div class="up-h">Give it a title</div>
       <div class="up-preview">${u.art?artHTML(u.art):''}</div>
-      <input class="up-input" id="upTitle" placeholder="Type a title…" value="${u.title.replace(/"/g,'&quot;')}" oninput="state.upload.title=this.value">`;
+      <input class="up-input" id="upTitle" placeholder="Type a title…" value="${esc(u.title)}" oninput="state.upload.title=this.value">`;
   } else if(u.step===3){
     const opts=MEDIA_TYPES.filter(m=>m!=='All').map(m=>`<div class="chip ${u.media===m?'on':''}" onclick="state.upload.media='${m}';renderUpload()">${m}</div>`).join('');
     body=`<div class="up-h">What did you use?</div>
@@ -595,8 +670,8 @@ function renderUpload(){
   } else if(u.step===4){
     body=`<div class="up-h">Look good? Post it!</div>
       <div class="up-preview">${u.art?artHTML(u.art):''}</div>
-      <div style="text-align:center;font-size:18px">“${u.title||'Untitled'}”</div>
-      <div style="text-align:center;color:#7a756c;margin-top:4px">${u.media||'—'}</div>`;
+      <div style="text-align:center;font-size:18px">“${esc(u.title||'Untitled')}”</div>
+      <div style="text-align:center;color:#7a756c;margin-top:4px">${esc(u.media||'—')}</div>`;
   }
   const back = u.step>1?`<button class="btn" onclick="upStep(-1)">Back</button>`:`<button class="btn" onclick="go('feed')">Cancel</button>`;
   let next;
@@ -691,7 +766,7 @@ function drawThread(){
         <div class="sg" onclick="botSend('Critique my drawing')">Critique my drawing</div></div>`:'';
       return `<div class="msg"><div class="mava">${BUNNY}</div><div><div class="bubble">${m.text}</div></div></div>${sg}`;
     }
-    const inner = m.img? `<img src="${m.img}" alt="">` : m.text;
+    const inner = m.img? `<img src="${m.img}" alt="">` : esc(m.text);
     return `<div class="msg me"><div class="bubble">${inner}</div></div>`;
   }).join('');
   t.scrollTop=t.scrollHeight;
