@@ -9,174 +9,94 @@
 <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Permanent+Marker&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <style>
-  /* ===== Sketch-o-Media — the LOOK (style) =====
-     Brand rule: white paper, red top "chrome", bold black marker lines. */
   :root{
-    --red:#E23A2E;        /* the red chrome bar */
-    --ink:#1c1c1c;        /* marker black */
-    --paper:#ffffff;      /* white paper */
-    --paper2:#F5F3EC;     /* soft paper for cards & bubbles */
-    --green:#9CC23F;      /* Sketch o' Bot green */
-    --muted:#7a756c;      /* quiet grey text */
-    --heart:#E5394A;
-    --hand:'Patrick Hand', cursive;
-    --marker:'Permanent Marker', cursive;
+    --red:#E23A2E; --ink:#1c1c1c; --paper:#ffffff; --paper2:#F5F3EC;
+    --green:#9CC23F; --muted:#7a756c; --heart:#E5394A;
+    --hand:'Patrick Hand', cursive; --marker:'Permanent Marker', cursive;
   }
   *{box-sizing:border-box;}
   html,body{margin:0;height:100%;}
-  body{
-    font-family:var(--hand);
-    background:#EAE7DF;
-    color:var(--ink);
-    display:flex;flex-direction:column;align-items:center;justify-content:center;
-    min-height:100%;padding:18px 14px;gap:10px;
-    -webkit-font-smoothing:antialiased;
-  }
+  body{font-family:var(--hand);background:#EAE7DF;color:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100%;padding:18px 14px;gap:10px;-webkit-font-smoothing:antialiased;}
   .caption{font-size:15px;color:#6a655c;text-align:center;max-width:390px;}
   .caption b{font-family:var(--marker);font-weight:400;color:var(--red);}
-
-  /* The phone-shaped app window */
-  .phone{
-    width:390px;max-width:100%;height:800px;max-height:88vh;
-    background:var(--paper);
-    border:3px solid var(--ink);
-    border-radius:30px;
-    overflow:hidden;position:relative;
-    display:flex;flex-direction:column;
-  }
-
-  /* ===== Top chrome bar (red) ===== */
-  .chrome{
-    flex-shrink:0;background:var(--red);
-    border-bottom:3px solid var(--ink);
-    padding:10px 12px;position:relative;z-index:30;
-    display:flex;align-items:center;gap:10px;
-  }
-  .logo{
-    font-family:var(--marker);font-size:18px;color:#fff;
-    cursor:pointer;line-height:1;letter-spacing:.3px;
-    text-shadow:1px 1px 0 rgba(0,0,0,.25);flex:1;
-  }
+  .phone{width:390px;max-width:100%;height:800px;max-height:88vh;background:var(--paper);border:3px solid var(--ink);border-radius:30px;overflow:hidden;position:relative;display:flex;flex-direction:column;}
+  .chrome{flex-shrink:0;background:var(--red);border-bottom:3px solid var(--ink);padding:10px 12px;position:relative;z-index:30;display:flex;align-items:center;gap:10px;}
+  .logo{font-family:var(--marker);font-size:18px;color:#fff;cursor:pointer;line-height:1;letter-spacing:.3px;text-shadow:1px 1px 0 rgba(0,0,0,.25);flex:1;}
   .chrome-actions{display:flex;align-items:center;gap:8px;}
-  .icon-btn,.avatar-btn{
-    background:#fff;border:2px solid var(--ink);border-radius:10px;
-    width:36px;height:36px;display:flex;align-items:center;justify-content:center;
-    cursor:pointer;padding:0;color:var(--ink);
-  }
+  .icon-btn,.avatar-btn{background:#fff;border:2px solid var(--ink);border-radius:10px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;color:var(--ink);}
   .avatar-btn{border-radius:50%;overflow:hidden;}
   .avatar-btn svg{width:100%;height:100%;}
   .icon-btn svg{width:20px;height:20px;}
   .icon-btn:active,.avatar-btn:active{transform:translateY(1px);}
-
-  /* Search drop-down under the chrome */
-  .search-wrap{
-    position:absolute;left:10px;right:10px;top:54px;
-    background:#fff;border:3px solid var(--ink);border-radius:14px;
-    padding:8px;z-index:40;
-  }
-  .search-wrap input{
-    width:100%;font-family:var(--hand);font-size:17px;
-    border:2px solid var(--ink);border-radius:10px;padding:8px 12px;outline:none;
-  }
+  .search-wrap{position:absolute;left:10px;right:10px;top:54px;background:#fff;border:3px solid var(--ink);border-radius:14px;padding:8px;z-index:40;}
+  .search-wrap input{width:100%;font-family:var(--hand);font-size:17px;border:2px solid var(--ink);border-radius:10px;padding:8px 12px;outline:none;}
   .search-results{margin-top:6px;display:flex;flex-direction:column;}
-  .search-row{
-    display:flex;align-items:center;gap:10px;padding:8px;border-radius:10px;cursor:pointer;
-  }
+  .search-row{display:flex;align-items:center;gap:10px;padding:8px;border-radius:10px;cursor:pointer;}
   .search-row:hover{background:var(--paper2);}
   .search-row .ava{width:34px;height:34px;border:2px solid var(--ink);border-radius:50%;overflow:hidden;flex-shrink:0;}
   .search-row .ava svg{width:100%;height:100%;}
   .search-row .nm{font-size:17px;}
   .search-row .fc{font-size:13px;color:var(--muted);margin-left:auto;}
   .search-empty{padding:10px;color:var(--muted);font-size:15px;}
-
-  /* ===== Screen area ===== */
   .screens{flex:1;position:relative;overflow:hidden;}
   .screen{position:absolute;inset:0;display:none;flex-direction:column;}
   .screen.active{display:flex;}
   .scroll{flex:1;overflow-y:auto;padding:14px;}
   .scroll::-webkit-scrollbar{width:0;}
-
   .screen-title{font-family:var(--marker);font-size:24px;margin:2px 2px 12px;}
   .back-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
-  .back-btn{
-    background:#fff;border:2px solid var(--ink);border-radius:10px;
-    padding:5px 12px;font-family:var(--hand);font-size:16px;cursor:pointer;
-    display:flex;align-items:center;gap:6px;
-  }
+  .back-btn{background:#fff;border:2px solid var(--ink);border-radius:10px;padding:5px 12px;font-family:var(--hand);font-size:16px;cursor:pointer;display:flex;align-items:center;gap:6px;}
   .back-btn svg{width:16px;height:16px;}
-
-  /* Feed toggle (Top Posts / Following) */
   .feed-toggle{display:flex;gap:8px;margin:2px 0 12px;}
   .ft{flex:1;text-align:center;border:2.5px solid var(--ink);border-radius:999px;padding:7px 0;font-family:var(--marker);font-size:16px;cursor:pointer;background:#fff;color:var(--ink);}
   .ft.on{background:var(--red);color:#fff;}
-
-  /* Media-type filter chips */
+  /* Auth (login / signup) */
+  .auth-scroll{display:flex;align-items:flex-start;justify-content:center;}
+  .auth-card{width:100%;max-width:320px;margin-top:14px;display:flex;flex-direction:column;gap:10px;}
+  .auth-logo{font-family:var(--marker);font-size:26px;color:var(--red);text-align:center;margin-bottom:2px;}
+  .auth-tabs{display:flex;gap:8px;}
+  .at{flex:1;text-align:center;border:2.5px solid var(--ink);border-radius:999px;padding:7px 0;font-family:var(--marker);font-size:16px;cursor:pointer;background:#fff;color:var(--ink);}
+  .at.on{background:var(--red);color:#fff;}
+  .auth-msg{background:#FFF3B0;border:2px solid var(--ink);border-radius:10px;padding:8px 12px;font-size:15px;}
+  .auth-err{color:#c0392b;font-size:15px;min-height:18px;text-align:center;}
+  .auth-lbl{font-size:14px;color:var(--muted);margin:2px 2px -4px;}
+  .auth-go{margin-top:4px;}
+  .auth-skip{text-align:center;color:var(--muted);font-size:15px;text-decoration:underline;cursor:pointer;margin-top:4px;}
   .filters{display:flex;gap:8px;overflow-x:auto;padding-bottom:10px;margin-bottom:4px;}
   .filters::-webkit-scrollbar{height:0;}
-  .chip{
-    flex-shrink:0;border:2px solid var(--ink);border-radius:999px;
-    padding:5px 13px;font-size:15px;background:#fff;cursor:pointer;white-space:nowrap;color:var(--ink);
-  }
+  .chip{flex-shrink:0;border:2px solid var(--ink);border-radius:999px;padding:5px 13px;font-size:15px;background:#fff;cursor:pointer;white-space:nowrap;color:var(--ink);}
   .chip.on{background:var(--ink);color:#fff;}
-
-  /* Feed grid */
   .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
   .card{cursor:pointer;}
-  .art-box{
-    position:relative;border:3px solid var(--ink);border-radius:14px;
-    background:#fff;aspect-ratio:1/1;overflow:hidden;display:flex;align-items:center;justify-content:center;
-  }
-  .art-box .rank{
-    position:absolute;left:-3px;top:-3px;background:var(--red);color:#fff;
-    border:3px solid var(--ink);border-bottom-right-radius:12px;border-top-left-radius:11px;
-    font-family:var(--marker);font-size:15px;min-width:26px;height:26px;
-    display:flex;align-items:center;justify-content:center;padding:0 4px;
-  }
+  .art-box{position:relative;border:3px solid var(--ink);border-radius:14px;background:#fff;aspect-ratio:1/1;overflow:hidden;display:flex;align-items:center;justify-content:center;}
+  .art-box .rank{position:absolute;left:-3px;top:-3px;background:var(--red);color:#fff;border:3px solid var(--ink);border-bottom-right-radius:12px;border-top-left-radius:11px;font-family:var(--marker);font-size:15px;min-width:26px;height:26px;display:flex;align-items:center;justify-content:center;padding:0 4px;}
   .art-svg,.art-img{width:100%;height:100%;display:block;object-fit:cover;}
   .card .c-title{font-size:17px;margin:7px 2px 0;line-height:1.05;}
   .card .c-meta{display:flex;align-items:center;gap:6px;margin:2px 2px 0;color:var(--muted);font-size:14px;}
   .card .c-react{display:flex;align-items:center;gap:8px;margin:4px 2px 0;font-size:14px;}
   .react-num{display:flex;align-items:center;gap:3px;}
-
-  /* Profile */
   .p-head{display:flex;gap:12px;align-items:flex-start;margin-bottom:6px;}
   .p-ava{width:74px;height:74px;border:3px solid var(--ink);border-radius:50%;overflow:hidden;flex-shrink:0;}
   .p-ava svg{width:100%;height:100%;}
   .p-name{font-family:var(--marker);font-size:22px;line-height:1.1;}
   .p-followers{font-size:16px;color:var(--muted);margin:2px 0 8px;}
-  .btn{
-    border:2px solid var(--ink);border-radius:10px;background:#fff;color:var(--ink);
-    font-family:var(--hand);font-size:16px;padding:6px 16px;cursor:pointer;
-  }
+  .btn{border:2px solid var(--ink);border-radius:10px;background:#fff;color:var(--ink);font-family:var(--hand);font-size:16px;padding:6px 16px;cursor:pointer;}
   .btn.follow{background:var(--red);color:#fff;}
   .btn.following{background:#fff;color:var(--ink);}
   .btn.green{background:var(--green);}
-  .p-desc{
-    background:#FFF3B0;border:2px solid var(--ink);border-radius:10px;
-    padding:8px 12px;font-size:16px;margin:10px 0 4px;
-  }
+  .p-desc{background:#FFF3B0;border:2px solid var(--ink);border-radius:10px;padding:8px 12px;font-size:16px;margin:10px 0 4px;}
   .p-posts-label{font-family:var(--marker);font-size:20px;margin:14px 2px 4px;border-bottom:3px solid var(--red);padding-bottom:4px;}
-
-  /* Post detail overlay */
   .post-overlay{position:absolute;inset:0;z-index:60;background:var(--paper);display:none;flex-direction:column;}
   .post-overlay.open{display:flex;}
   .post-art{flex:1;display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer;padding:10px;}
   .post-art .art-svg,.post-art .art-img{width:auto;height:auto;max-width:96%;max-height:96%;object-fit:contain;}
-  .post-x{
-    position:absolute;top:12px;right:12px;z-index:5;background:#fff;border:2.5px solid var(--ink);
-    border-radius:50%;width:40px;height:40px;display:flex;align-items:center;justify-content:center;cursor:pointer;
-  }
+  .post-x{position:absolute;top:12px;right:12px;z-index:5;background:#fff;border:2.5px solid var(--ink);border-radius:50%;width:40px;height:40px;display:flex;align-items:center;justify-content:center;cursor:pointer;}
   .post-x svg{width:20px;height:20px;}
-  .post-nav{
-    position:absolute;right:12px;top:50%;transform:translateY(-50%);
-    display:flex;flex-direction:column;gap:10px;z-index:5;
-  }
+  .post-nav{position:absolute;right:12px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:10px;z-index:5;}
   .navchev{background:#fff;border:2.5px solid var(--ink);border-radius:50%;width:40px;height:40px;display:flex;align-items:center;justify-content:center;cursor:pointer;}
   .navchev svg{width:20px;height:20px;}
   .hint{position:absolute;left:0;right:0;bottom:14px;text-align:center;color:var(--muted);font-size:15px;z-index:4;pointer-events:none;}
-  .post-info{
-    flex-shrink:0;border-top:3px solid var(--ink);background:#fff;padding:10px 14px;
-  }
+  .post-info{flex-shrink:0;border-top:3px solid var(--ink);background:#fff;padding:10px 14px;}
   .post-info .pi-title{font-family:var(--marker);font-size:19px;text-align:center;margin-bottom:8px;}
   .pi-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
   .creator-chip{display:flex;align-items:center;gap:7px;cursor:pointer;}
@@ -190,8 +110,6 @@
   .emoji-btn{cursor:pointer;background:none;border:none;font-size:20px;padding:0;line-height:1;}
   .heart-btn{cursor:pointer;background:none;border:none;display:flex;align-items:center;gap:3px;font-size:15px;color:var(--ink);font-family:var(--hand);}
   .heart-btn svg{width:22px;height:22px;}
-
-  /* Upload */
   .steps{display:flex;gap:6px;justify-content:center;margin-bottom:14px;}
   .step-dot{width:24px;height:24px;border:2px solid var(--ink);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;background:#fff;}
   .step-dot.on{background:var(--green);}
@@ -206,8 +124,6 @@
   .file-label{display:block;text-align:center;margin-top:12px;color:var(--muted);font-size:15px;}
   .file-label span{text-decoration:underline;cursor:pointer;color:var(--ink);}
   .file-label input{display:none;}
-
-  /* Bot screen */
   .bot-top{flex-shrink:0;padding:8px 12px;border-bottom:2px solid var(--ink);display:flex;align-items:center;gap:8px;}
   .bot-top .bava{width:34px;height:34px;border:2px solid var(--ink);border-radius:50%;overflow:hidden;background:#fff;}
   .bot-top .bava svg{width:100%;height:100%;}
@@ -232,33 +148,22 @@
   .composer .send{background:var(--green);}
   .composer .cam svg,.composer .send svg{width:22px;height:22px;}
   .composer input{flex:1;font-family:var(--hand);font-size:17px;border:2.5px solid var(--ink);border-radius:999px;padding:9px 16px;outline:none;}
-
-  /* Floating bot button */
-  .bot-fab{
-    position:absolute;right:14px;bottom:16px;z-index:50;
-    width:60px;height:60px;border-radius:50%;background:#fff;border:3px solid var(--ink);
-    cursor:pointer;display:flex;align-items:center;justify-content:center;padding:6px;
-  }
+  .bot-fab{position:absolute;right:14px;bottom:16px;z-index:50;width:60px;height:60px;border-radius:50%;background:#fff;border:3px solid var(--ink);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:6px;}
   .bot-fab svg{width:100%;height:100%;}
-  .toast{
-    position:absolute;left:50%;bottom:24px;transform:translateX(-50%);
-    background:var(--ink);color:#fff;padding:8px 16px;border-radius:999px;font-size:15px;z-index:90;
-    opacity:0;transition:opacity .2s;pointer-events:none;
-  }
+  .toast{position:absolute;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:8px 16px;border-radius:999px;font-size:15px;z-index:90;opacity:0;transition:opacity .2s;pointer-events:none;}
   .toast.show{opacity:1;}
 </style>
 </head>
 <body>
-  <div class="caption">Your app, for real. Tap a drawing, swipe through art, visit an artist, or say hi to <b>Sketch o' Bot</b>.</div>
+  <div class="caption">Your app, for real. Make an account, post your art, and say hi to <b>Sketch o' Bot</b>.</div>
 
   <div class="phone" id="phone">
-    <!-- ===== TOP CHROME ===== -->
     <header class="chrome">
       <div class="logo" onclick="go('feed')">Sketch-o-Media</div>
       <div class="chrome-actions">
         <button class="icon-btn" aria-label="Search creators" onclick="toggleSearch()" id="searchBtn"></button>
         <button class="icon-btn" aria-label="New post" onclick="go('upload')" id="plusBtn"></button>
-        <button class="avatar-btn" aria-label="Your profile" onclick="openMe()" id="meBtn"></button>
+        <button class="avatar-btn" aria-label="Log in" onclick="onAvatarClick()" id="meBtn"></button>
       </div>
       <div class="search-wrap" id="searchWrap" hidden>
         <input id="searchInput" placeholder="Search creators…" oninput="onSearch(this.value)" autocomplete="off" />
@@ -266,30 +171,24 @@
       </div>
     </header>
 
-    <!-- ===== SCREENS ===== -->
     <div class="screens">
       <section class="screen active" id="screen-feed"></section>
       <section class="screen" id="screen-profile"></section>
       <section class="screen" id="screen-upload"></section>
       <section class="screen" id="screen-bot"></section>
+      <section class="screen" id="screen-auth"></section>
     </div>
 
-    <!-- ===== POST DETAIL OVERLAY ===== -->
     <div class="post-overlay" id="postOverlay"></div>
-
-    <!-- ===== FLOATING BOT BUTTON ===== -->
     <button class="bot-fab" id="botFab" aria-label="Open Sketch o' Bot" onclick="go('bot')"></button>
-
     <div class="toast" id="toast"></div>
   </div>
 
 <script>
 /* ============================================================
-   Sketch-o-Media — the BEHAVIOR (what happens when you click)
-   Now backed by a real Supabase database!
+   Sketch-o-Media — backed by a real Supabase database + accounts
    ============================================================ */
 
-/* ---------- little drawn icons (so it works offline) ---------- */
 const ICON = {
   search:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>`,
   plus:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`,
@@ -301,17 +200,17 @@ const ICON = {
   send:`<svg viewBox="0 0 24 24" fill="none" stroke="#1c1c1c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="6"/><polyline points="6 11 12 5 18 11"/></svg>`,
   heart:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M12 20s-7-4.6-7-9.4A3.6 3.6 0 0 1 12 8a3.6 3.6 0 0 1 7 2.6C19 15.4 12 20 12 20z"/></svg>`,
   heartFull:`<svg viewBox="0 0 24 24" fill="#E5394A" stroke="#1c1c1c" stroke-width="2.2" stroke-linejoin="round"><path d="M12 20s-7-4.6-7-9.4A3.6 3.6 0 0 1 12 8a3.6 3.6 0 0 1 7 2.6C19 15.4 12 20 12 20z"/></svg>`,
+  user:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.6"/><path d="M5 20c0-3.6 3.1-6 7-6s7 2.4 7 6"/></svg>`,
 };
 
-/* ---------- the bunny mascot (Sketch o' Bot) ---------- */
 const BUNNY = `<svg viewBox="0 0 64 80"><g fill="#9CC23F" stroke="#1c1c1c" stroke-width="3.2" stroke-linejoin="round"><rect x="20" y="6" width="9" height="34" rx="4.5" transform="rotate(-6 24.5 23)"/><rect x="35" y="6" width="9" height="34" rx="4.5" transform="rotate(6 39.5 23)"/><rect x="10" y="30" width="44" height="42" rx="13"/></g><g stroke="#1c1c1c" stroke-width="3" stroke-linecap="round" fill="none"><line x1="25" y1="46" x2="25" y2="54"/><line x1="39" y1="46" x2="39" y2="54"/><path d="M32 56 L32 62 M32 62 L28.5 66 M32 62 L35.5 66"/></g><rect x="29" y="48" width="6" height="6" rx="1.2" fill="none" stroke="#1c1c1c" stroke-width="2.4"/></svg>`;
 
-/* ---------- helper: a simple doodle face ---------- */
+const DEFAULT_AVATAR = `<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="33" fill="#fff" stroke="#1c1c1c" stroke-width="3.2"/><circle cx="40" cy="48" r="2.6" fill="#1c1c1c"/><circle cx="60" cy="48" r="2.6" fill="#1c1c1c"/><path d="M40 62 q10 7 20 0" fill="none" stroke="#1c1c1c" stroke-width="2.6" stroke-linecap="round"/></svg>`;
+
 function face(parts){
   return `<svg viewBox="0 0 100 100" class="art-svg"><circle cx="50" cy="50" r="33" fill="${parts.bg||'#fff'}" stroke="#1c1c1c" stroke-width="3.2"/>${parts.extra||''}</svg>`;
 }
 
-/* ---------- ARTWORK (drawn as code so nothing else is needed) ---------- */
 const ART = {
   sick: face({extra:`<path d="M34 45 q5 -5 10 0" fill="none" stroke="#1c1c1c" stroke-width="3" stroke-linecap="round"/><path d="M56 45 q5 -5 10 0" fill="none" stroke="#1c1c1c" stroke-width="3" stroke-linecap="round"/><ellipse cx="35" cy="58" rx="6" ry="4" fill="#e07b7b" opacity=".55"/><ellipse cx="65" cy="58" rx="6" ry="4" fill="#e07b7b" opacity=".55"/><path d="M38 66 q4 -5 7 0 t7 0 t7 0" fill="none" stroke="#1c1c1c" stroke-width="3" stroke-linecap="round"/><path d="M78 40 q3 6 0 9 q-3 -3 0 -9" fill="#7ec8ff" stroke="#1c1c1c" stroke-width="1.5"/>`}),
   sleepy: face({extra:`<path d="M33 50 q6 5 11 0" fill="none" stroke="#1c1c1c" stroke-width="3" stroke-linecap="round"/><path d="M56 50 q6 5 11 0" fill="none" stroke="#1c1c1c" stroke-width="3" stroke-linecap="round"/><circle cx="50" cy="66" r="4" fill="none" stroke="#1c1c1c" stroke-width="3"/><text x="70" y="34" font-family="Permanent Marker" font-size="13" fill="#1c1c1c">z</text><text x="78" y="26" font-family="Permanent Marker" font-size="10" fill="#1c1c1c">z</text>`}),
@@ -328,91 +227,44 @@ const ART = {
   smile2:`<svg viewBox="0 0 100 100" class="art-svg"><rect width="100" height="100" fill="#FFF6D6"/><circle cx="50" cy="50" r="30" fill="#FFD66B" stroke="#1c1c1c" stroke-width="3.2"/><circle cx="40" cy="46" r="3" fill="#1c1c1c"/><circle cx="60" cy="46" r="3" fill="#1c1c1c"/><path d="M36 58 q14 14 28 0" fill="none" stroke="#1c1c1c" stroke-width="3" stroke-linecap="round"/></svg>`,
 };
 
-/* ---------- artists (used to SEED the database the first time) ---------- */
-const SEED_CREATORS = {
-  pete:{name:"Stinky Pete", followers:447, desc:"I make daily art of how I feel.", ava:face({extra:`<path d="M40 48 v6 M60 48 v6" stroke="#1c1c1c" stroke-width="3" stroke-linecap="round"/><path d="M42 64 q8 5 16 0" fill="none" stroke="#1c1c1c" stroke-width="2.6" stroke-linecap="round"/><text x="64" y="34" font-family="Permanent Marker" font-size="13" fill="#E5394A">!</text>`})},
-  riot:{name:"Riot Ruler", followers:47000, desc:"I'm a guy who makes INSANE ART.", ava:ART.evil},
-  dragon:{name:"Doodle Dragon", followers:1200, desc:"I draw little monsters all day.", ava:ART.dragon},
-  crayon:{name:"Crayon Queen", followers:3400, desc:"Color is my best friend!", ava:`<svg viewBox="0 0 100 100"><circle cx="50" cy="52" r="31" fill="#fff" stroke="#1c1c1c" stroke-width="3.2"/><path d="M30 30 l8 -10 l8 10 l8 -10 l8 10 z" fill="#FFD66B" stroke="#1c1c1c" stroke-width="2.4" stroke-linejoin="round"/><circle cx="41" cy="52" r="3" fill="#1c1c1c"/><circle cx="59" cy="52" r="3" fill="#1c1c1c"/><path d="M40 62 q10 9 20 0" fill="none" stroke="#1c1c1c" stroke-width="2.6" stroke-linecap="round"/></svg>`},
-  pup:{name:"Pixel Pup", followers:890, desc:"Blocky doggos and good vibes.", ava:ART.dog},
-  misty:{name:"Misty Meadows", followers:2100, desc:"Calm watercolor worlds.", ava:face({extra:`<path d="M34 50 q5 4 10 0 M56 50 q5 4 10 0" fill="none" stroke="#1c1c1c" stroke-width="3" stroke-linecap="round"/><path d="M42 62 q8 4 16 0" fill="none" stroke="#1c1c1c" stroke-width="2.4" stroke-linecap="round"/>`})},
-};
-
-/* ---------- posts (used to SEED the database the first time) ---------- */
-const SEED_POSTS = [
-  {by:"pete",   title:"I don't feel so good", media:"Pencil",     hearts:4200,  art:{type:'svg',svg:ART.sick}},
-  {by:"riot",   title:"Evil Artist",          media:"Marker",     hearts:38000, art:{type:'svg',svg:ART.evil}},
-  {by:"riot",   title:"I Am Broke",           media:"Pen",        hearts:21000, art:{type:'svg',svg:ART.broke}},
-  {by:"crayon", title:"Rainbow Day",          media:"Crayon",     hearts:3300,  art:{type:'svg',svg:ART.rainbow}},
-  {by:"misty",  title:"Quiet Hills",          media:"Watercolor", hearts:2600,  art:{type:'svg',svg:ART.hills}},
-  {by:"dragon", title:"Spike the Dragon",     media:"Pen",        hearts:1500,  art:{type:'svg',svg:ART.dragon}},
-  {by:"pete",   title:"So sleepy",            media:"Pencil",     hearts:1300,  art:{type:'svg',svg:ART.sleepy}},
-  {by:"pup",    title:"Good Boy",             media:"Pen",        hearts:1100,  art:{type:'svg',svg:ART.dog}},
-  {by:"pup",    title:"Clay Buddy",           media:"Clay",       hearts:980,   art:{type:'svg',svg:ART.clay}},
-  {by:"pete",   title:"Monday again",         media:"Charcoal",   hearts:920,   art:{type:'svg',svg:ART.grumpy}},
-  {by:"crayon", title:"Sunny Smile",          media:"Crayon",     hearts:760,   art:{type:'svg',svg:ART.smile2}},
-  {by:"pete",   title:"Happy today!",         media:"Marker",     hearts:640,   art:{type:'svg',svg:ART.happy}},
-  {by:"dragon", title:"Tiny Slime",           media:"Pencil",     hearts:540,   art:{type:'svg',svg:ART.slime}},
-];
-
 const MEDIA_TYPES = ["All","Pencil","Pen","Marker","Charcoal","Watercolor","Crayon","Clay"];
 
 /* ---------- app memory (state) ---------- */
 const state = {
-  screen:'feed',
-  filter:'All',
-  feedView:'top',
-  me:null,
-  following:new Set(),
-  hearted:new Set(),
+  screen:'feed', filter:'All', feedView:'top',
+  me:null, authMode:'login', authMsg:'',
+  following:new Set(), hearted:new Set(),
   postList:[], postIndex:0, infoRevealed:false,
   profileId:null,
   upload:{step:1, art:null, title:'', media:null, file:null},
-  botVisited:false,
-  botMessages:[],
+  botVisited:false, botMessages:[],
 };
 
-/* ---------- connect to Supabase (the real database) ---------- */
+/* ---------- connect to Supabase ---------- */
 const SUPABASE_URL = "https://ihoyoyvpvrznsritibgd.supabase.co";
 const SUPABASE_KEY = "sb_publishable_TrCVnfiIrkm9PIGrGgrllQ_GjUQRg86";
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-/* runtime data, filled from the database */
 let CREATORS = {};
 let POSTS = [];
 
 async function init(){
   showLoading();
-  try { await loadAll(); }
-  catch(e){ console.error(e); showError(); return; }
-  document.getElementById('meBtn').innerHTML = (state.me && CREATORS[state.me]) ? CREATORS[state.me].ava : SEED_CREATORS.pete.ava;
+  try {
+    const { data:{ session } } = await sb.auth.getSession();
+    await loadAll(session);
+  } catch(e){ console.error(e); showError(); return; }
+  updateChrome();
   renderFeed();
 }
-async function ensureSeed(){
-  const { data: profs, error } = await sb.from('profiles').insert(
-    Object.entries(SEED_CREATORS).map(([username,c])=>({ username, display_name:c.name, description:c.desc, avatar_svg:c.ava, seed_followers:c.followers }))
-  ).select();
-  if(error || !profs) return;
-  const idByUser = {}; profs.forEach(p=>idByUser[p.username]=p.id);
-  await sb.from('posts').insert(
-    SEED_POSTS.map(p=>({ creator_id:idByUser[p.by], title:p.title, media_type:p.media, art_svg:p.art.svg, seed_hearts:p.hearts }))
-  );
-  if(idByUser['pete'] && idByUser['dragon']){
-    await sb.from('follows').insert({ follower_id:idByUser['pete'], following_id:idByUser['dragon'] });
-  }
-}
-async function loadAll(){
-  const head = await sb.from('posts').select('id',{count:'exact',head:true});
-  if(!head.count){ await ensureSeed(); }
+async function loadAll(session){
+  state.me = (session && session.user) ? session.user.id : null;
   const { data: profs } = await sb.from('profiles').select('*');
   const { data: posts } = await sb.from('posts').select('*').order('created_at',{ascending:false});
   CREATORS = {};
-  (profs||[]).forEach(p=>{ CREATORS[p.id] = { username:p.username, name:p.display_name, followers:p.seed_followers, desc:p.description, ava:p.avatar_svg }; });
-  const me = (profs||[]).find(p=>p.username==='pete') || (profs||[])[0];
-  state.me = me ? me.id : null;
+  (profs||[]).forEach(p=>{ CREATORS[p.id] = { username:p.username, name:p.display_name, followers:p.seed_followers, desc:p.description, ava:(p.avatar_svg&&p.avatar_svg.trim())?p.avatar_svg:DEFAULT_AVATAR }; });
   POSTS = (posts||[]).map(p=>({ id:p.id, by:p.creator_id, title:p.title, media:p.media_type, hearts:p.seed_hearts, created_at:p.created_at, art: p.art_svg ? {type:'svg',svg:p.art_svg} : {type:'img',src:p.image_url} }));
-  state.hearted = new Set();
-  state.following = new Set();
+  state.hearted = new Set(); state.following = new Set();
   if(state.me){
     const { data: hs } = await sb.from('reactions').select('post_id').eq('user_id',state.me).eq('type','heart');
     state.hearted = new Set((hs||[]).map(r=>r.post_id));
@@ -422,27 +274,110 @@ async function loadAll(){
 }
 function showLoading(){ document.getElementById('screen-feed').innerHTML = `<div class="scroll" style="display:flex;align-items:center;justify-content:center;text-align:center;color:#7a756c"><div><div style="font-family:var(--marker);font-size:22px;color:var(--red);margin-bottom:8px">Sketch-o-Media</div>Loading the gallery…</div></div>`; }
 function showError(){ document.getElementById('screen-feed').innerHTML = `<div class="scroll" style="text-align:center;color:#7a756c"><p style="margin-top:50px;font-size:17px">Hmm — couldn't reach the database.<br>Check the internet and <span style="text-decoration:underline;cursor:pointer" onclick="init()">try again</span>.</p></div>`; }
-function openMe(){ if(state.me) openProfile(state.me); }
-function feedList(){
-  let list;
-  if(state.feedView==='following'){ list = POSTS.filter(p=>state.following.has(p.by)); }
-  else { list = topPosts(); }
-  if(state.filter!=='All') list = list.filter(p=>p.media===state.filter);
-  return list;
+
+/* ---------- accounts ---------- */
+function updateChrome(){
+  const me = state.me && CREATORS[state.me];
+  const b = document.getElementById('meBtn');
+  b.innerHTML = me ? me.ava : ICON.user;
+  b.setAttribute('aria-label', me ? 'Your profile' : 'Log in or sign up');
 }
-function setFeed(v){ state.feedView=v; renderFeed(); }
+function onAvatarClick(){ if(state.me) openProfile(state.me); else showAuth('login'); }
+function requireLogin(action){ showAuth('login', 'Log in or sign up to '+action+'.'); }
+function val(id){ const e=document.getElementById(id); return e ? e.value.trim() : ''; }
+function rawVal(id){ const e=document.getElementById(id); return e ? e.value : ''; }
+function authErr(t){ const e=document.getElementById('authError'); if(e) e.textContent=t||''; }
+function ageFrom(dob){ const d=new Date(dob); if(isNaN(d.getTime())) return null; const n=new Date(); let a=n.getFullYear()-d.getFullYear(); const m=n.getMonth()-d.getMonth(); if(m<0||(m===0&&n.getDate()<d.getDate())) a--; return a; }
+function friendlyAuthError(m){
+  m=m||'Something went wrong.';
+  if(/invalid login/i.test(m)) return 'That email or password isn\'t right.';
+  if(/already registered|already been registered|already exists/i.test(m)) return 'That email already has an account — try logging in.';
+  if(/rate limit/i.test(m)) return 'Too many tries — wait a minute, then try again.';
+  if(/confirm/i.test(m)) return 'Please confirm your email first (check your inbox).';
+  return m;
+}
+function showAuth(mode, msg){ state.authMode=mode||'login'; state.authMsg=msg||''; activate('auth'); renderAuth(); }
+function renderAuth(){
+  const login = state.authMode!=='signup';
+  document.getElementById('screen-auth').innerHTML = `
+    <div class="scroll auth-scroll">
+      <div class="auth-card">
+        <div class="auth-logo">Sketch-o-Media</div>
+        <div class="auth-tabs">
+          <div class="at ${login?'on':''}" onclick="showAuth('login')">Log in</div>
+          <div class="at ${!login?'on':''}" onclick="showAuth('signup')">Sign up</div>
+        </div>
+        ${state.authMsg?`<div class="auth-msg">${state.authMsg}</div>`:''}
+        <div id="authError" class="auth-err"></div>
+        ${login ? `
+          <input class="up-input" id="auEmail" type="email" placeholder="Email" autocomplete="username">
+          <input class="up-input" id="auPass" type="password" placeholder="Password" autocomplete="current-password">
+          <button class="btn green auth-go" onclick="doLogin()">Log in</button>
+        ` : `
+          <input class="up-input" id="auName" placeholder="Your artist name" maxlength="24">
+          <input class="up-input" id="auEmail" type="email" placeholder="Email" autocomplete="email">
+          <input class="up-input" id="auPass" type="password" placeholder="Password (6+ letters)" autocomplete="new-password">
+          <label class="auth-lbl">Your birthday (you must be 13+)</label>
+          <input class="up-input" id="auDob" type="date">
+          <button class="btn green auth-go" onclick="doSignup()">Create my account</button>
+        `}
+        <div class="auth-skip" onclick="go('feed')">← Just look around</div>
+      </div>
+    </div>`;
+}
+async function doLogin(){
+  const email=val('auEmail'), pass=rawVal('auPass');
+  if(!email||!pass) return authErr('Type your email and password.');
+  authErr('Logging in…');
+  const { data, error } = await sb.auth.signInWithPassword({ email, password:pass });
+  if(error) return authErr(friendlyAuthError(error.message));
+  await afterAuth(data.session);
+}
+async function doSignup(){
+  const name=val('auName'), email=val('auEmail'), pass=rawVal('auPass'), dob=val('auDob');
+  if(!name) return authErr('Pick an artist name.');
+  if(!email||!pass) return authErr('Add an email and a password.');
+  if(pass.length<6) return authErr('Password needs 6+ letters.');
+  if(!dob) return authErr('Add your birthday.');
+  const a=ageFrom(dob);
+  if(a===null) return authErr('That birthday looks off.');
+  if(a<13) return authErr('Sorry — you need to be 13 or older to make an account.');
+  authErr('Creating your account…');
+  const { data, error } = await sb.auth.signUp({ email, password:pass, options:{ data:{ display_name:name, birthdate:dob } } });
+  if(error) return authErr(friendlyAuthError(error.message));
+  if(!data.session){ showAuth('login', 'Almost there! Check your email to confirm your account, then log in.'); return; }
+  await afterAuth(data.session);
+}
+async function afterAuth(session){
+  showLoading(); activate('feed');
+  await loadAll(session);
+  updateChrome(); renderFeed();
+  toast('Welcome to Sketch-o-Media! 🎉');
+}
+async function doLogout(){
+  await sb.auth.signOut();
+  showLoading(); activate('feed');
+  await loadAll(null);
+  updateChrome(); renderFeed();
+  toast('Logged out.');
+}
 
 /* ---------- tiny helpers ---------- */
 function fmt(n){ if(n>=1000){ let k=n/1000; return (k>=10?Math.round(k):(Math.round(k*10)/10)).toString().replace(/\.0$/,'')+'K'; } return ''+n; }
 function heartsOf(p){ return p.hearts + (state.hearted.has(p.id)?1:0); }
 function artHTML(art){ return art.type==='img' ? `<img src="${art.src}" class="art-svg" alt=""/>` : art.svg; }
 function topPosts(){ return [...POSTS].sort((a,b)=>heartsOf(b)-heartsOf(a)); }
+function feedList(){
+  let list = state.feedView==='following' ? POSTS.filter(p=>state.following.has(p.by)) : topPosts();
+  if(state.filter!=='All') list = list.filter(p=>p.media===state.filter);
+  return list;
+}
+function setFeed(v){ state.feedView=v; renderFeed(); }
 function toast(t){ const el=document.getElementById('toast'); el.textContent=t; el.classList.add('show'); clearTimeout(el._t); el._t=setTimeout(()=>el.classList.remove('show'),1600); }
 
-/* ---------- set up the fixed icons ---------- */
 document.getElementById('searchBtn').innerHTML = ICON.search;
 document.getElementById('plusBtn').innerHTML = ICON.plus;
-document.getElementById('meBtn').innerHTML = SEED_CREATORS.pete.ava;
+document.getElementById('meBtn').innerHTML = ICON.user;
 document.getElementById('botFab').innerHTML = BUNNY;
 
 /* ---------- screen switching ---------- */
@@ -450,10 +385,11 @@ function activate(name){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   const el=document.getElementById('screen-'+name); if(el) el.classList.add('active');
   state.screen=name;
-  document.getElementById('botFab').style.display=(name==='bot')?'none':'flex';
+  document.getElementById('botFab').style.display=(name==='bot'||name==='auth')?'none':'flex';
   hideSearch();
 }
 function go(name){
+  if(name==='upload' && !state.me){ requireLogin('post your art'); return; }
   closePost();
   activate(name);
   if(name==='feed') renderFeed();
@@ -482,7 +418,7 @@ function renderFeed(){
   let empty='';
   if(list.length===0){
     empty = state.feedView==='following'
-      ? '<p style="color:#7a756c;text-align:center;margin-top:30px">Follow some artists and their newest art shows up here! Tap an artist, then hit Follow.</p>'
+      ? `<p style="color:#7a756c;text-align:center;margin-top:30px">${state.me?'Follow some artists and their newest art shows up here! Tap an artist, then hit Follow.':'Log in and follow artists to build this feed.'}</p>`
       : '<p style="color:#7a756c;text-align:center;margin-top:30px">No art in this style yet. Try another!</p>';
   }
   document.getElementById('screen-feed').innerHTML = `
@@ -511,7 +447,7 @@ function openPost(kind, id){
 }
 function closePost(){
   document.getElementById('postOverlay').classList.remove('open');
-  if(state.screen!=='bot') document.getElementById('botFab').style.display='flex';
+  if(state.screen!=='bot' && state.screen!=='auth') document.getElementById('botFab').style.display='flex';
 }
 function renderPost(){
   const p=state.postList[state.postIndex]; if(!p) return;
@@ -550,7 +486,7 @@ function toggleInfo(){ state.infoRevealed=!state.infoRevealed; renderPost(); }
 function nextPost(){ state.postIndex=(state.postIndex+1)%state.postList.length; state.infoRevealed=false; renderPost(); }
 function prevPost(){ state.postIndex=(state.postIndex-1+state.postList.length)%state.postList.length; state.infoRevealed=false; renderPost(); }
 async function toggleHeart(id){
-  if(!state.me) return;
+  if(!state.me){ requireLogin('heart art'); return; }
   const had = state.hearted.has(id);
   if(had) state.hearted.delete(id); else state.hearted.add(id);
   renderPost();
@@ -560,7 +496,8 @@ async function toggleHeart(id){
   }catch(e){ if(had) state.hearted.add(id); else state.hearted.delete(id); renderPost(); toast('Could not save — try again'); }
 }
 async function bump(type){
-  const p=state.postList[state.postIndex]; if(!p||!state.me) return;
+  if(!state.me){ requireLogin('react'); return; }
+  const p=state.postList[state.postIndex]; if(!p) return;
   toast((type==='smiley'?'🙂':'👍')+' reaction saved!');
   try{ await sb.from('reactions').insert({post_id:p.id,user_id:state.me,type}); }catch(e){}
 }
@@ -579,13 +516,13 @@ function renderProfile(id){
   const fc = (c.followers||0) + (following?1:0);
   const posts = POSTS.filter(p=>p.by===id).sort((a,b)=>heartsOf(b)-heartsOf(a));
   const btn = mine
-    ? `<button class="btn" onclick="toast('Editing your profile — coming soon!')">Edit</button>`
+    ? `<button class="btn" onclick="toast('Editing your profile — coming soon!')">Edit</button> <button class="btn" onclick="doLogout()">Log out</button>`
     : `<button class="btn ${following?'following':'follow'}" onclick="toggleFollow('${id}')">${following?'Following ✓':'Follow'}</button>`;
-  const grid = posts.map(p=>`
+  const grid = posts.length ? posts.map(p=>`
     <div class="card" onclick="openPost('profile:${id}','${p.id}')">
       <div class="art-box">${artHTML(p.art)}</div>
       <div class="c-react" style="justify-content:center"><span style="color:#E5394A">❤️ ${fmt(heartsOf(p))}</span></div>
-    </div>`).join('');
+    </div>`).join('') : `<p style="color:#7a756c;grid-column:1/3;text-align:center;margin-top:10px">${mine?'No art yet — tap + to post your first drawing!':'No posts yet.'}</p>`;
   document.getElementById('screen-profile').innerHTML = `
     <div class="scroll">
       <div class="back-row"><button class="back-btn" onclick="go('feed')">${ICON.back} Home</button></div>
@@ -603,7 +540,7 @@ function renderProfile(id){
     </div>`;
 }
 async function toggleFollow(id){
-  if(!state.me) return;
+  if(!state.me){ requireLogin('follow artists'); return; }
   const had=state.following.has(id);
   if(had){ state.following.delete(id); toast('Unfollowed '+(CREATORS[id]?CREATORS[id].name:'')); }
   else { state.following.add(id); toast('Now following '+(CREATORS[id]?CREATORS[id].name:'')+'! 🎉'); }
@@ -625,7 +562,7 @@ function toggleSearch(){
 function hideSearch(){ const w=document.getElementById('searchWrap'); if(w){ w.hidden=true; const i=document.getElementById('searchInput'); if(i) i.value=''; } }
 function onSearch(q){
   q=q.trim().toLowerCase();
-  const ids=Object.keys(CREATORS).filter(id=> CREATORS[id].name.toLowerCase().includes(q));
+  const ids=Object.keys(CREATORS).filter(id=> (CREATORS[id].name||'').toLowerCase().includes(q));
   const html = ids.length? ids.map(id=>{
     const c=CREATORS[id];
     return `<div class="search-row" onclick="openProfile('${id}')">
@@ -659,7 +596,7 @@ function renderUpload(){
     body=`<div class="up-h">Look good? Post it!</div>
       <div class="up-preview">${u.art?artHTML(u.art):''}</div>
       <div style="text-align:center;font-size:18px">“${u.title||'Untitled'}”</div>
-      <div style="text-align:center;color:#7a756c;margin-top:4px">${u.media||'—'} · by Stinky Pete (you)</div>`;
+      <div style="text-align:center;color:#7a756c;margin-top:4px">${u.media||'—'}</div>`;
   }
   const back = u.step>1?`<button class="btn" onclick="upStep(-1)">Back</button>`:`<button class="btn" onclick="go('feed')">Cancel</button>`;
   let next;
@@ -696,13 +633,13 @@ function upStep(d){
 }
 async function finishUpload(){
   const u=state.upload;
-  if(!state.me){ toast('Still loading — one sec…'); return; }
+  if(!state.me){ requireLogin('post your art'); return; }
   toast('Posting…');
   let art_svg=null, image_url=null;
   try{
     if(u.art.type==='img' && u.file){
       const safe=(u.file.name||'drawing').replace(/[^a-zA-Z0-9._-]/g,'_');
-      const path='u/'+Date.now()+'-'+safe;
+      const path=state.me+'/'+Date.now()+'-'+safe;
       const up=await sb.storage.from('drawings').upload(path,u.file);
       if(up.error) throw up.error;
       image_url=sb.storage.from('drawings').getPublicUrl(path).data.publicUrl;
@@ -722,10 +659,7 @@ async function finishUpload(){
 function activateBehind(name){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); const el=document.getElementById('screen-'+name); if(el) el.classList.add('active'); state.screen=name; }
 
 /* ================= SKETCH O' BOT ================= */
-const RECENTS = [
-  {title:"My watercolor practice"},
-  {title:"Drawing hands help"},
-];
+const RECENTS = [ {title:"My watercolor practice"}, {title:"Drawing hands help"} ];
 function renderBot(){
   const recent = RECENTS.map(r=>`<div class="rc" onclick="openRecent('${r.title}')">${r.title}</div>`).join('');
   document.getElementById('screen-bot').innerHTML=`
@@ -812,7 +746,7 @@ ovEl.addEventListener('touchend',e=>{
   touchY=null;
 });
 
-/* ---------- start the app (loads from the database) ---------- */
+/* ---------- start ---------- */
 init();
 </script>
 </body>
