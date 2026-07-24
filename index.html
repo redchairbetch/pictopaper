@@ -26,6 +26,7 @@
   .icon-btn,.avatar-btn{background:#fff;border:2px solid var(--ink);border-radius:10px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;color:var(--ink);}
   .avatar-btn{border-radius:50%;overflow:hidden;}
   .avatar-btn svg{width:100%;height:100%;}
+  .avatar-btn img,.search-row .ava img,.creator-chip .ava img,.p-ava img,.apick img{width:100%;height:100%;object-fit:cover;display:block;}
   .icon-btn svg{width:20px;height:20px;}
   .icon-btn:active,.avatar-btn:active{transform:translateY(1px);}
   .search-wrap{position:absolute;left:10px;right:10px;top:54px;background:#fff;border:3px solid var(--ink);border-radius:14px;padding:8px;z-index:40;}
@@ -244,7 +245,7 @@ const MEDIA_TYPES = ["All","Pencil","Pen","Marker","Charcoal","Watercolor","Cray
 
 const state = {
   screen:'feed', filter:'All', feedView:'top',
-  me:null, authMode:'login', authMsg:'', editAvatar:null,
+  me:null, authMode:'login', authMsg:'', editAvatar:null, editPhoto:null,
   following:new Set(), hearted:new Set(),
   postList:[], postIndex:0, infoRevealed:false,
   profileId:null,
@@ -255,6 +256,8 @@ const state = {
 const SUPABASE_URL = "https://ihoyoyvpvrznsritibgd.supabase.co";
 const SUPABASE_KEY = "sb_publishable_TrCVnfiIrkm9PIGrGgrllQ_GjUQRg86";
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+/* photo avatars only ever come from our own moderated storage folder */
+const AVATAR_URL_PREFIX = SUPABASE_URL + "/storage/v1/object/public/drawings/avatars/";
 
 let CREATORS = {};
 let POSTS = [];
@@ -293,7 +296,9 @@ async function loadAll(session){
   const { data: profs } = await sb.from('profiles').select('*');
   const { data: posts } = await sb.from('posts').select('*').order('created_at',{ascending:false});
   CREATORS = {};
-  (profs||[]).forEach(p=>{ CREATORS[p.id] = { username:p.username, name:p.display_name, followers:p.seed_followers, desc:p.description, ava:(p.avatar_svg&&p.avatar_svg.trim())?p.avatar_svg:DEFAULT_AVATAR }; });
+  (profs||[]).forEach(p=>{ CREATORS[p.id] = { username:p.username, name:p.display_name, followers:p.seed_followers, desc:p.description,
+    ava: AVATAR_CHOICES.includes(p.avatar_svg) ? p.avatar_svg : DEFAULT_AVATAR,
+    avaUrl: (p.avatar_url && p.avatar_url.startsWith(AVATAR_URL_PREFIX)) ? p.avatar_url : null }; });
   POSTS = (posts||[]).map(p=>({ id:p.id, by:p.creator_id, title:p.title, media:p.media_type, hearts:p.seed_hearts, created_at:p.created_at, art: p.art_svg ? {type:'svg',svg:p.art_svg} : {type:'img',src:p.image_url} }));
   state.hearted = new Set(); state.following = new Set();
   if(state.me){
@@ -318,7 +323,7 @@ function updateFabs(){
 function updateChrome(){
   const me = state.me && CREATORS[state.me];
   const b = document.getElementById('meBtn');
-  b.innerHTML = me ? me.ava : ICON.user;
+  b.innerHTML = me ? avaHTML(me) : ICON.user;
   b.setAttribute('aria-label', me ? 'Your profile' : 'Log in or sign up');
 }
 function onAvatarClick(){ if(state.me) openProfile(state.me); else showAuth('login'); }
@@ -403,23 +408,36 @@ async function doLogout(){
 
 /* ---------- edit profile ---------- */
 function backToMyProfile(){ if(state.me) openProfile(state.me); else go('feed'); }
-function pickAvatar(i){ state.editAvatar=AVATAR_CHOICES[i]; renderEditProfile(); }
+function pickAvatar(i){ state.editAvatar=AVATAR_CHOICES[i]; state.editPhoto=null; renderEditProfile(); }
+function epPhoto(ev){
+  const f=ev.target.files[0]; if(!f) return; ev.target.value='';
+  toast('Loading photo…');
+  downscale(f,(dataUrl)=>{
+    if(!dataUrl){ toast('Could not read that image.'); return; }
+    state.editPhoto={kind:'new', src:dataUrl};
+    renderEditProfile();
+  }, 512);
+}
 function openEditProfile(){
   if(!state.me) return;
   const c=CREATORS[state.me]||{};
   state.editAvatar = c.ava || DEFAULT_AVATAR;
+  state.editPhoto = c.avaUrl ? {kind:'existing', src:c.avaUrl} : null;
   activate('editprofile');
   renderEditProfile();
 }
 function renderEditProfile(){
   const c=CREATORS[state.me]||{};
-  const picks = AVATAR_CHOICES.map((a,i)=>`<div class="apick ${state.editAvatar===a?'sel':''}" onclick="pickAvatar(${i})">${a}</div>`).join('');
+  const picks = AVATAR_CHOICES.map((a,i)=>`<div class="apick ${!state.editPhoto&&state.editAvatar===a?'sel':''}" onclick="pickAvatar(${i})">${a}</div>`).join('');
+  const photoTile = state.editPhoto ? `<div class="apick sel"><img src="${esc(state.editPhoto.src)}" alt="Your photo"/></div>` : '';
   document.getElementById('screen-editprofile').innerHTML = `
     <div class="scroll">
       <div class="back-row"><button class="back-btn" onclick="backToMyProfile()">${ICON.back} Back</button></div>
       <div class="up-h">Edit your profile</div>
       <label class="auth-lbl" style="text-align:center;display:block;margin-bottom:6px">Pick an avatar</label>
-      <div class="ava-pick">${picks}</div>
+      <div class="ava-pick">${picks}${photoTile}</div>
+      <label class="file-label" style="margin-top:0">…or <span>upload a photo</span> for your avatar<input type="file" accept="image/*" onchange="epPhoto(event)"></label>
+      <div class="shield">🛡️ Photos are checked by Sketch o' Bot to keep PicToPaper friendly.</div>
       <label class="auth-lbl">Artist name</label>
       <input class="up-input" id="epName" value="${esc(c.name)}" maxlength="24">
       <label class="auth-lbl" style="margin-top:8px">About you</label>
@@ -431,10 +449,30 @@ async function saveProfile(){
   const name=val('epName');
   const desc=(document.getElementById('epDesc')||{}).value||'';
   if(!name) return toast('Add an artist name.');
+  const c=CREATORS[state.me]||{};
+  /* photo changes go through update-avatar so every photo is checked first */
+  if(state.editPhoto && state.editPhoto.kind==='new'){
+    toast('🛡️ Checking your photo…');
+    try{
+      const { data, error } = await sb.functions.invoke('update-avatar', { body:{ image_base64: state.editPhoto.src } });
+      if(error) throw error;
+      if(data && data.rejected){ toast(data.reason || 'That photo didn\'t pass our friendly check.'); return; }
+      if(!data || !data.ok || !data.avatar_url){ toast((data&&data.error)||'Could not save — try again'); return; }
+      c.avaUrl = data.avatar_url;
+    }catch(e){ console.error(e); toast('Could not save — try again'); return; }
+  } else if(!state.editPhoto && c.avaUrl){
+    /* switched back to a doodle — remove the stored photo */
+    try{
+      const { error } = await sb.functions.invoke('update-avatar', { body:{ clear:true } });
+      if(error) throw error;
+      c.avaUrl = null;
+    }catch(e){ console.error(e); toast('Could not save — try again'); return; }
+  }
   toast('Saving…');
-  const { error } = await sb.from('profiles').update({ display_name:name, description:desc.trim(), avatar_svg:state.editAvatar }).eq('id', state.me);
+  const doodle = state.editAvatar || c.ava || DEFAULT_AVATAR;
+  const { error } = await sb.from('profiles').update({ display_name:name, description:desc.trim(), avatar_svg:doodle }).eq('id', state.me);
   if(error){ console.error(error); toast('Could not save — try again'); return; }
-  const c=CREATORS[state.me]; if(c){ c.name=name; c.desc=desc.trim(); c.ava=state.editAvatar; }
+  c.name=name; c.desc=desc.trim(); c.ava=doodle;
   updateChrome();
   openProfile(state.me);
   toast('Profile saved! 🎉');
@@ -444,6 +482,7 @@ async function saveProfile(){
 function fmt(n){ if(n>=1000){ let k=n/1000; return (k>=10?Math.round(k):(Math.round(k*10)/10)).toString().replace(/\.0$/,'')+'K'; } return ''+n; }
 function heartsOf(p){ return p.hearts + (state.hearted.has(p.id)?1:0); }
 function artHTML(art){ return art.type==='img' ? `<img src="${art.src}" class="art-svg" alt=""/>` : art.svg; }
+function avaHTML(c){ return (c&&c.avaUrl) ? `<img src="${esc(c.avaUrl)}" alt=""/>` : ((c&&c.ava)||DEFAULT_AVATAR); }
 function topPosts(){ return [...POSTS].sort((a,b)=>heartsOf(b)-heartsOf(a)); }
 function feedList(){
   let list = state.feedView==='following' ? POSTS.filter(p=>state.following.has(p.by)) : topPosts();
@@ -539,7 +578,7 @@ function renderPost(){
       <div class="pi-title">${esc(p.title)}</div>
       <div class="pi-row">
         <div class="creator-chip" onclick="openProfile('${p.by}')">
-          <div class="ava">${c.ava}</div><span>${esc(c.name)}</span>
+          <div class="ava">${avaHTML(c)}</div><span>${esc(c.name)}</span>
         </div>
         ${ !mine && !following ? `<span class="pill red" onclick="event.stopPropagation();toggleFollow('${p.by}')">+ Follow</span>`:''}
         <span class="media-chip">${esc(p.media)}</span>
@@ -617,7 +656,7 @@ function renderProfile(id){
     <div class="scroll">
       <div class="back-row"><button class="back-btn" onclick="go('feed')">${ICON.back} Home</button></div>
       <div class="p-head">
-        <div class="p-ava">${c.ava}</div>
+        <div class="p-ava">${avaHTML(c)}</div>
         <div style="flex:1">
           <div class="p-name">${esc(c.name)}</div>
           <div class="p-followers">${fmt(fc)||fc} followers</div>
@@ -657,7 +696,7 @@ function onSearch(q){
   const html = ids.length? ids.map(id=>{
     const c=CREATORS[id];
     return `<div class="search-row" onclick="openProfile('${id}')">
-      <div class="ava">${c.ava}</div><div class="nm">${esc(c.name)}</div><div class="fc">${fmt(c.followers)||c.followers}</div>
+      <div class="ava">${avaHTML(c)}</div><div class="nm">${esc(c.name)}</div><div class="fc">${fmt(c.followers)||c.followers}</div>
     </div>`;
   }).join('') : `<div class="search-empty">No creators found.</div>`;
   document.getElementById('searchResults').innerHTML=html;
