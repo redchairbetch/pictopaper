@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Sketch-o-Media</title>
+<title>PicToPaper</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Permanent+Marker&display=swap" rel="stylesheet">
@@ -21,7 +21,7 @@
   .caption b{font-family:var(--marker);font-weight:400;color:var(--red);}
   .phone{width:390px;max-width:100%;height:800px;max-height:88vh;background:var(--paper);border:3px solid var(--ink);border-radius:30px;overflow:hidden;position:relative;display:flex;flex-direction:column;}
   .chrome{flex-shrink:0;background:var(--red);border-bottom:3px solid var(--ink);padding:10px 12px;position:relative;z-index:30;display:flex;align-items:center;gap:10px;}
-  .logo{font-family:var(--marker);font-size:18px;color:#fff;cursor:pointer;line-height:1;letter-spacing:.3px;text-shadow:1px 1px 0 rgba(0,0,0,.25);flex:1;}
+  .logo{font-family:var(--marker);font-size:19px;color:#fff;cursor:pointer;line-height:1;letter-spacing:.3px;text-shadow:1px 1px 0 rgba(0,0,0,.25);flex:1;}
   .chrome-actions{display:flex;align-items:center;gap:8px;}
   .icon-btn,.avatar-btn{background:#fff;border:2px solid var(--ink);border-radius:10px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;color:var(--ink);}
   .avatar-btn{border-radius:50%;overflow:hidden;}
@@ -52,7 +52,7 @@
   .ft.on{background:var(--red);color:#fff;}
   .auth-scroll{display:flex;align-items:flex-start;justify-content:center;}
   .auth-card{width:100%;max-width:320px;margin-top:14px;display:flex;flex-direction:column;gap:10px;}
-  .auth-logo{font-family:var(--marker);font-size:26px;color:var(--red);text-align:center;margin-bottom:2px;}
+  .auth-logo{font-family:var(--marker);font-size:28px;color:var(--red);text-align:center;margin-bottom:2px;}
   .auth-tabs{display:flex;gap:8px;}
   .at{flex:1;text-align:center;border:2.5px solid var(--ink);border-radius:999px;padding:7px 0;font-family:var(--marker);font-size:16px;cursor:pointer;background:#fff;color:var(--ink);}
   .at.on{background:var(--red);color:#fff;}
@@ -130,6 +130,7 @@
   .file-label{display:block;text-align:center;margin-top:12px;color:var(--muted);font-size:15px;}
   .file-label span{text-decoration:underline;cursor:pointer;color:var(--ink);}
   .file-label input{display:none;}
+  .shield{text-align:center;color:var(--muted);font-size:13px;margin-top:10px;}
   .bot-top{flex-shrink:0;padding:8px 12px;border-bottom:2px solid var(--ink);display:flex;align-items:center;gap:8px;}
   .bot-top .bava{width:34px;height:34px;border:2px solid var(--ink);border-radius:50%;overflow:hidden;background:#fff;}
   .bot-top .bava svg{width:100%;height:100%;}
@@ -153,7 +154,7 @@
   .composer .cam,.composer .send{width:42px;height:42px;border:2.5px solid var(--ink);border-radius:11px;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;}
   .composer .send{background:var(--green);}
   .composer .cam svg,.composer .send svg{width:22px;height:22px;}
-  .composer input{flex:1;font-family:var(--hand);font-size:17px;border:2.5px solid var(--ink);border-radius:999px;padding:9px 16px;outline:none;}
+  .composer input[type=text]{flex:1;font-family:var(--hand);font-size:17px;border:2.5px solid var(--ink);border-radius:999px;padding:9px 16px;outline:none;}
   .bot-fab{position:absolute;right:14px;bottom:16px;z-index:50;width:60px;height:60px;border-radius:50%;background:#fff;border:3px solid var(--ink);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:6px;}
   .bot-fab svg{width:100%;height:100%;}
   .post-fab{position:absolute;left:50%;transform:translateX(-50%);bottom:16px;z-index:50;width:62px;height:62px;border-radius:50%;background:var(--red);border:3px solid var(--ink);cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;}
@@ -164,11 +165,11 @@
 </style>
 </head>
 <body>
-  <div class="caption">Your app, for real. Make an account, post your art, and say hi to <b>Sketch o' Bot</b>.</div>
+  <div class="caption">Post your art, get real coaching from <b>Sketch o' Bot</b>, and every uploaded photo is checked to keep it friendly.</div>
 
   <div class="phone" id="phone">
     <header class="chrome">
-      <div class="logo" onclick="go('feed')">Sketch-o-Media</div>
+      <div class="logo" onclick="go('feed')">PicToPaper</div>
       <div class="chrome-actions">
         <button class="icon-btn" aria-label="Search creators" onclick="toggleSearch()" id="searchBtn"></button>
         <button class="avatar-btn" aria-label="Log in" onclick="onAvatarClick()" id="meBtn"></button>
@@ -196,7 +197,7 @@
 
 <script>
 /* ============================================================
-   Sketch-o-Media — Supabase database + accounts
+   PicToPaper — Supabase database + accounts + real AI
    ============================================================ */
 
 const ICON = {
@@ -241,18 +242,16 @@ const ART = {
 const AVATAR_CHOICES = [DEFAULT_AVATAR, ART.happy, ART.grumpy, ART.sleepy, ART.smile2, ART.dragon];
 const MEDIA_TYPES = ["All","Pencil","Pen","Marker","Charcoal","Watercolor","Crayon","Clay"];
 
-/* ---------- app memory (state) ---------- */
 const state = {
   screen:'feed', filter:'All', feedView:'top',
   me:null, authMode:'login', authMsg:'', editAvatar:null,
   following:new Set(), hearted:new Set(),
   postList:[], postIndex:0, infoRevealed:false,
   profileId:null,
-  upload:{step:1, art:null, title:'', media:null, file:null},
-  botVisited:false, botMessages:[],
+  upload:{step:1, art:null, title:'', media:null},
+  botVisited:false, botMessages:[], botBusy:false,
 };
 
-/* ---------- connect to Supabase ---------- */
 const SUPABASE_URL = "https://ihoyoyvpvrznsritibgd.supabase.co";
 const SUPABASE_KEY = "sb_publishable_TrCVnfiIrkm9PIGrGgrllQ_GjUQRg86";
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -261,6 +260,23 @@ let CREATORS = {};
 let POSTS = [];
 
 function esc(s){ return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+/* shrink a photo before sending it (faster + cheaper to check) */
+function downscale(file, cb, max, quality){
+  max = max || 1024; quality = quality || 0.85;
+  const img = new Image();
+  const url = URL.createObjectURL(file);
+  img.onload = ()=>{
+    let w = img.width, h = img.height;
+    if(w>max || h>max){ const s = max/Math.max(w,h); w = Math.round(w*s); h = Math.round(h*s); }
+    const c = document.createElement('canvas'); c.width = w; c.height = h;
+    c.getContext('2d').drawImage(img, 0, 0, w, h);
+    URL.revokeObjectURL(url);
+    try { cb(c.toDataURL('image/jpeg', quality)); } catch(e){ console.error(e); cb(null); }
+  };
+  img.onerror = ()=>{ URL.revokeObjectURL(url); cb(null); };
+  img.src = url;
+}
 
 async function init(){
   showLoading();
@@ -287,10 +303,9 @@ async function loadAll(session){
     state.following = new Set((fs||[]).map(f=>f.following_id));
   }
 }
-function showLoading(){ document.getElementById('screen-feed').innerHTML = `<div class="scroll" style="display:flex;align-items:center;justify-content:center;text-align:center;color:#7a756c"><div><div style="font-family:var(--marker);font-size:22px;color:var(--red);margin-bottom:8px">Sketch-o-Media</div>Loading the gallery…</div></div>`; }
+function showLoading(){ document.getElementById('screen-feed').innerHTML = `<div class="scroll" style="display:flex;align-items:center;justify-content:center;text-align:center;color:#7a756c"><div><div style="font-family:var(--marker);font-size:24px;color:var(--red);margin-bottom:8px">PicToPaper</div>Loading the gallery…</div></div>`; }
 function showError(){ document.getElementById('screen-feed').innerHTML = `<div class="scroll" style="text-align:center;color:#7a756c"><p style="margin-top:50px;font-size:17px">Hmm — couldn't reach the database.<br>Check the internet and <span style="text-decoration:underline;cursor:pointer" onclick="init()">try again</span>.</p></div>`; }
 
-/* ---------- floating buttons ---------- */
 function updateFabs(){
   const overlay = document.getElementById('postOverlay').classList.contains('open');
   const s = state.screen;
@@ -325,7 +340,7 @@ function renderAuth(){
   document.getElementById('screen-auth').innerHTML = `
     <div class="scroll auth-scroll">
       <div class="auth-card">
-        <div class="auth-logo">Sketch-o-Media</div>
+        <div class="auth-logo">PicToPaper</div>
         <div class="auth-tabs">
           <div class="at ${login?'on':''}" onclick="showAuth('login')">Log in</div>
           <div class="at ${!login?'on':''}" onclick="showAuth('signup')">Sign up</div>
@@ -375,7 +390,7 @@ async function afterAuth(session){
   showLoading(); activate('feed');
   await loadAll(session);
   updateChrome(); renderFeed(); updateFabs();
-  toast('Welcome to Sketch-o-Media! 🎉');
+  toast('Welcome to PicToPaper! 🎉');
 }
 async function doLogout(){
   await sb.auth.signOut();
@@ -435,7 +450,7 @@ function feedList(){
   return list;
 }
 function setFeed(v){ state.feedView=v; renderFeed(); }
-function toast(t){ const el=document.getElementById('toast'); el.textContent=t; el.classList.add('show'); clearTimeout(el._t); el._t=setTimeout(()=>el.classList.remove('show'),1700); }
+function toast(t){ const el=document.getElementById('toast'); el.textContent=t; el.classList.add('show'); clearTimeout(el._t); el._t=setTimeout(()=>el.classList.remove('show'),2200); }
 
 document.getElementById('searchBtn').innerHTML = ICON.search;
 document.getElementById('postFab').innerHTML = ICON.plus;
@@ -455,7 +470,7 @@ function go(name){
   closePost();
   activate(name);
   if(name==='feed') renderFeed();
-  if(name==='upload'){ state.upload={step:1,art:null,title:'',media:null,file:null}; renderUpload(); }
+  if(name==='upload'){ state.upload={step:1,art:null,title:'',media:null}; renderUpload(); }
   if(name==='bot') renderBot();
 }
 
@@ -647,7 +662,7 @@ function onSearch(q){
   document.getElementById('searchResults').innerHTML=html;
 }
 
-/* ================= UPLOAD (5 steps) ================= */
+/* ================= UPLOAD (5 steps, moderated) ================= */
 const SAMPLE_ART = ['happy','grumpy','sleepy','rainbow','dragon','slime'];
 function renderUpload(){
   const u=state.upload;
@@ -657,7 +672,8 @@ function renderUpload(){
     const picks=SAMPLE_ART.map(k=>`<div class="pick ${u.art&&u.art.key===k?'sel':''}" onclick="pickArt('${k}')">${ART[k]}</div>`).join('');
     body=`<div class="up-h">Pick your drawing</div>
       <div class="pick-grid">${picks}</div>
-      <label class="file-label">…or <span>upload a photo</span> of a real drawing<input type="file" accept="image/*" onchange="uploadPhoto(event)"></label>`;
+      <label class="file-label">…or <span>upload a photo</span> of a real drawing<input type="file" accept="image/*" onchange="uploadPhoto(event)"></label>
+      <div class="shield">🛡️ Photos are checked by Sketch o' Bot to keep PicToPaper friendly.</div>`;
   } else if(u.step===2){
     body=`<div class="up-h">Give it a title</div>
       <div class="up-preview">${u.art?artHTML(u.art):''}</div>
@@ -689,12 +705,15 @@ function renderUpload(){
       <div class="up-nav">${back}${next}</div>
     </div>`;
 }
-function pickArt(k){ state.upload.art={type:'svg',svg:ART[k],key:k}; state.upload.file=null; renderUpload(); }
+function pickArt(k){ state.upload.art={type:'svg',svg:ART[k],key:k}; renderUpload(); }
 function uploadPhoto(ev){
-  const f=ev.target.files[0]; if(!f) return;
-  const r=new FileReader();
-  r.onload=()=>{ state.upload.art={type:'img',src:r.result,key:'photo'}; state.upload.file=f; renderUpload(); };
-  r.readAsDataURL(f);
+  const f=ev.target.files[0]; if(!f) return; ev.target.value='';
+  toast('Loading photo…');
+  downscale(f,(dataUrl)=>{
+    if(!dataUrl){ toast('Could not read that image.'); return; }
+    state.upload.art={type:'img',src:dataUrl,key:'photo'};
+    renderUpload();
+  });
 }
 function upStep(d){
   const u=state.upload;
@@ -709,31 +728,26 @@ function upStep(d){
 async function finishUpload(){
   const u=state.upload;
   if(!state.me){ requireLogin('post your art'); return; }
-  toast('Posting…');
-  let art_svg=null, image_url=null;
+  if(!u.art){ toast('Pick a drawing first!'); return; }
+  toast(u.art.type==='img' ? '🛡️ Checking your art…' : 'Posting…');
   try{
-    if(u.art.type==='img' && u.file){
-      const safe=(u.file.name||'drawing').replace(/[^a-zA-Z0-9._-]/g,'_');
-      const path=state.me+'/'+Date.now()+'-'+safe;
-      const up=await sb.storage.from('drawings').upload(path,u.file);
-      if(up.error) throw up.error;
-      image_url=sb.storage.from('drawings').getPublicUrl(path).data.publicUrl;
-    } else {
-      art_svg=u.art.svg;
-    }
-    const ins=await sb.from('posts').insert({creator_id:state.me,title:u.title.trim()||'Untitled',media_type:u.media||'Pencil',art_svg,image_url,seed_hearts:0}).select().single();
-    if(ins.error) throw ins.error;
-    const d=ins.data;
-    const post={id:d.id, by:d.creator_id, title:d.title, media:d.media_type, hearts:0, created_at:d.created_at, art: art_svg?{type:'svg',svg:art_svg}:{type:'img',src:image_url}};
+    const body={ title:u.title.trim()||'Untitled', media_type:u.media||'Pencil' };
+    if(u.art.type==='img') body.image_base64=u.art.src; else body.sample_key=u.art.key;
+    const { data, error } = await sb.functions.invoke('submit-post', { body });
+    if(error) throw error;
+    if(data && data.rejected){ toast(data.reason || 'That image didn\'t pass our friendly-art check.'); return; }
+    if(!data || !data.ok || !data.post){ toast((data&&data.error)||'Could not post — try again'); return; }
+    const d=data.post;
+    const post={id:d.id, by:d.creator_id, title:d.title, media:d.media_type, hearts:0, created_at:d.created_at, art: d.art_svg?{type:'svg',svg:d.art_svg}:{type:'img',src:d.image_url}};
     POSTS.unshift(post);
     toast('Posted! 🎉 Your art is saved.');
     openPost('profile:'+state.me, post.id);
     activateBehind('profile'); renderProfile(state.me);
-  }catch(e){ console.error(e); toast('Upload failed — try again'); }
+  }catch(e){ console.error(e); toast('Could not post — try again'); }
 }
 function activateBehind(name){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); const el=document.getElementById('screen-'+name); if(el) el.classList.add('active'); state.screen=name; }
 
-/* ================= SKETCH O' BOT ================= */
+/* ================= SKETCH O' BOT (real AI) ================= */
 const RECENTS = [ {title:"My watercolor practice"}, {title:"Drawing hands help"} ];
 function renderBot(){
   const recent = RECENTS.map(r=>`<div class="rc" onclick="openRecent('${r.title}')">${r.title}</div>`).join('');
@@ -746,8 +760,9 @@ function renderBot(){
     <div class="recent">${recent}<div class="rc" onclick="go('feed')">‹ Home</div></div>
     <div class="bot-thread" id="botThread"></div>
     <div class="composer">
+      <input type="file" id="botFile" accept="image/*" style="display:none" onchange="botPhoto(event)">
       <button class="cam" aria-label="Show a drawing" onclick="botCamera()">${ICON.camera}</button>
-      <input id="botInput" placeholder="Ask Sketch o' Bot…" onkeydown="if(event.key==='Enter')botSend()">
+      <input type="text" id="botInput" placeholder="Ask Sketch o' Bot…" onkeydown="if(event.key==='Enter')botSend()">
       <button class="send" aria-label="Send" onclick="botSend()">${ICON.send}</button>
     </div>`;
   if(!state.botVisited && state.botMessages.length===0){
@@ -760,48 +775,68 @@ function drawThread(){
   const t=document.getElementById('botThread'); if(!t) return;
   t.innerHTML = state.botMessages.map(m=>{
     if(m.who==='bot'){
+      if(m.thinking) return `<div class="msg"><div class="mava">${BUNNY}</div><div><div class="bubble" style="opacity:.65;font-style:italic">thinking…</div></div></div>`;
       const sg = m.suggest? `<div class="suggest">
         <div class="sg" onclick="botSend('How do I shade with pencil?')">How do I shade with pencil?</div>
         <div class="sg" onclick="botSend('Help me blend watercolors')">Help me blend watercolors</div>
         <div class="sg" onclick="botSend('Critique my drawing')">Critique my drawing</div></div>`:'';
-      return `<div class="msg"><div class="mava">${BUNNY}</div><div><div class="bubble">${m.text}</div></div></div>${sg}`;
+      return `<div class="msg"><div class="mava">${BUNNY}</div><div><div class="bubble">${esc(m.text).replace(/\n/g,'<br>')}</div></div></div>${sg}`;
     }
     const inner = m.img? `<img src="${m.img}" alt="">` : esc(m.text);
     return `<div class="msg me"><div class="bubble">${inner}</div></div>`;
   }).join('');
   t.scrollTop=t.scrollHeight;
 }
-function botReply(text){
-  const q=(text||'').toLowerCase();
-  if(q.includes('shade')||q.includes('pencil')) return "Great question! For smooth pencil shading, hold the pencil at a low angle and build up tone in light layers — soft first, then darker. Shade in tiny circles to avoid harsh lines. Want to show me? Tap the camera!";
-  if(q.includes('watercolor')||q.includes('blend')) return "Watercolor blending is so fun! Wet the paper first, then drop two colors next to each other while it's still shiny — they melt together on their own. Less water = more control, more water = dreamy blends. You've got this!";
-  if(q.includes('critique')||q.includes('feedback')) return "I'd love to! Tap the little camera button and show me your drawing — I'll tell you my favorite things about it, plus one tip to level up. 🎨";
-  if(q.includes('hand')) return "Hands are tricky for EVERYONE — even the pros! Start by drawing a soft mitten shape, then add the fingers as simple tubes. Look at your own hand while you draw. Practice 2 minutes a day and you'll be amazed in a week!";
-  return "I love that you're thinking about art! Tell me what you're working on, or tap a suggestion and I'll help. Remember: every great artist started exactly where you are right now. ✏️";
-}
 function botSend(preset){
+  if(!state.me){ requireLogin('chat with Sketch o\' Bot'); return; }
+  if(state.botBusy) return;
   const input=document.getElementById('botInput');
   const text = preset!==undefined? preset : (input? input.value.trim():'');
   if(!text) return;
   if(input) input.value='';
   state.botMessages.forEach(m=>m.suggest=false);
   state.botMessages.push({who:'me', text});
-  drawThread();
-  setTimeout(()=>{ state.botMessages.push({who:'bot', text:botReply(text)}); drawThread(); }, 450);
+  askBot(null);
 }
 function botCamera(){
-  state.botMessages.forEach(m=>m.suggest=false);
-  state.botMessages.push({who:'me', img:'data:image/svg+xml;utf8,'+encodeURIComponent(ART.happy)});
+  if(!state.me){ requireLogin('chat with Sketch o\' Bot'); return; }
+  const f=document.getElementById('botFile'); if(f) f.click();
+}
+function botPhoto(ev){
+  const f=ev.target.files[0]; if(!f) return; ev.target.value='';
+  downscale(f,(dataUrl)=>{
+    if(!dataUrl){ toast('Could not read that image.'); return; }
+    state.botMessages.forEach(m=>m.suggest=false);
+    state.botMessages.push({who:'me', img:dataUrl});
+    askBot(dataUrl);
+  });
+}
+async function askBot(image){
+  state.botBusy = true;
+  state.botMessages.push({who:'bot', thinking:true});
   drawThread();
-  setTimeout(()=>{ state.botMessages.push({who:'bot', text:"Whoa, I love this! The energy in your lines is awesome and the face has so much personality. One tip: try a darker shadow on one side to make it pop off the page. Keep going — you're getting better every single day! ⭐"}); drawThread(); }, 500);
+  const history = state.botMessages.filter(m=>!m.thinking)
+    .map(m=>({ role: m.who==='me'?'user':'assistant', text: m.text || (m.img?'(shared a drawing)':'') }))
+    .filter(m=>m.text);
+  let reply;
+  try{
+    const { data, error } = await sb.functions.invoke('sketch-bot', { body:{ messages:history, image: image||null } });
+    if(error) throw error;
+    reply = (data && data.reply) || 'Hmm, try asking me another way!';
+  }catch(e){
+    console.error(e);
+    reply = "Sketch o' Bot is taking a quick nap — try again in a moment! 🐰";
+  }
+  state.botMessages = state.botMessages.filter(m=>!m.thinking);
+  state.botMessages.push({who:'bot', text: reply});
+  state.botBusy = false;
+  drawThread();
 }
 function newChat(){ state.botMessages=[]; state.botVisited=false; renderBot(); }
 function openRecent(title){
-  state.botMessages=[
-    {who:'me', text: title==='My watercolor practice'?'Help me blend watercolors':'Help me draw hands'},
-    {who:'bot', text: botReply(title==='My watercolor practice'?'watercolor':'hand')},
-  ];
-  drawThread();
+  if(!state.me){ requireLogin('chat with Sketch o\' Bot'); return; }
+  state.botMessages=[]; state.botVisited=true;
+  botSend(title==='My watercolor practice'?'How do I get better at watercolor blending?':'Can you help me learn to draw hands?');
 }
 
 /* ---------- keyboard + swipe for the post viewer ---------- */
