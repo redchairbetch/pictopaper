@@ -126,7 +126,7 @@
   .pick.sel{outline:4px solid var(--green);outline-offset:0;}
   .up-input{width:100%;font-family:var(--hand);font-size:18px;border:2.5px solid var(--ink);border-radius:10px;padding:10px 14px;outline:none;}
   .up-preview{border:3px solid var(--ink);border-radius:14px;overflow:hidden;width:170px;height:170px;margin:0 auto 12px;background:#fff;}
-  .up-nav{display:flex;gap:10px;justify-content:space-between;margin-top:auto;padding-top:14px;}
+  .up-nav{display:flex;gap:14px;justify-content:center;margin-top:auto;padding-top:16px;padding-bottom:8px;}
   .file-label{display:block;text-align:center;margin-top:12px;color:var(--muted);font-size:15px;}
   .file-label span{text-decoration:underline;cursor:pointer;color:var(--ink);}
   .file-label input{display:none;}
@@ -309,7 +309,8 @@ function showError(){ document.getElementById('screen-feed').innerHTML = `<div c
 function updateFabs(){
   const overlay = document.getElementById('postOverlay').classList.contains('open');
   const s = state.screen;
-  document.getElementById('botFab').style.display = (!overlay && s!=='bot' && s!=='auth') ? 'flex':'none';
+  const busyScreen = (s==='bot' || s==='auth' || s==='upload' || s==='editprofile');
+  document.getElementById('botFab').style.display = (!overlay && !busyScreen) ? 'flex':'none';
   document.getElementById('postFab').style.display = (!overlay && (s==='feed'||s==='profile')) ? 'flex':'none';
 }
 
